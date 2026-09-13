@@ -41,3 +41,5 @@
 - Portalに「権限なし」状態を追加：加盟店区画はsectionごとの必要scope、開発者ポータルは `webhooks:manage` を満たさないrole（read_onlyなど）でalertを表示し、操作ボタンを描画しない。
 - E2E 3をimmediateモード＋ECサーバー照会（`/api/orders/:id/confirm`）によるcaptureへ変更し、シナリオ1・4をUI経由で検証する。500配信の出現は独立workerの配信完了を待つpollにした（支払済み判定が即時になり、配信履歴の読み取りと競合していたため）。
 - シナリオ3（残高不足→チャージ→同じcheckoutを再承認）とシナリオ9（timeout_success→unknown→照会で1回だけ記帳）の自動テストを追加した。
+- 公開デプロイの追加依頼に対し、この環境では外向き通信が遮断され Cloudflare Tunnel も資格情報も使えないため実施しない。代わりに本番ビルドの実操作を Playwright で撮影した画面ギャラリー（`scripts/ui-gallery.ts`、Artifact 公開）を提供し、実機で触るための3方式を completion-report 第9節に記した。撮影は iPhone 13 相当 2倍解像度・JPEG 76% で 1 ページ 6.4 MB に収めた。
+- PWA アイコンは外部画像ツールに依存せず、Playwright 管理 Chromium で `public/logo.svg` と同じマークを PNG に描画する（`scripts/icons.ts`）。maskable 用は余白付きの全面ネイビー、Apple 用は 180px 全面。service worker のキャッシュ対象は静的アイコンのみ。

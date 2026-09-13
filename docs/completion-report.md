@@ -96,3 +96,13 @@ E2E 7ケース：別オリジンSDK購入→一部出荷→部分返金／英語
 - 実装・文書のコミット：`1f1d5746b17337b87298dd278400981441ec8b1b`（ブランチ `claude/express-completion-delivery-e92pt1`、base `430d918`）。
 - push：`git push -u origin claude/express-completion-delivery-e92pt1` を実施（結果は本ファイルを含む後続コミットと GitHub のブランチで確認できる）。
 - `.env`・`.local`・`node_modules`・`dist`・`.next`・`test-results` はコミットに含まれない。
+
+## 9. 追加依頼：公開デプロイと画面確認（2026-09-13 09:19〜09:40 UTC）
+
+依頼：Cloudflare 等へデプロイし、ロゴを付けて、スマートフォンで画面UIを確認したい。
+
+- **公開デプロイは未実施。** この作業環境は外向きの直接通信が遮断されており（TCP 7844・直接HTTPSとも不可）、Cloudflare Tunnel（cloudflared）はプロキシ経由のリリース取得も 403 で不可。Cloudflare アカウント・API トークンや Node 実行基盤・PostgreSQL ホストの資格情報もない。ExPress は Next Portal・Fastify API・独立 worker・別オリジン EC・PostgreSQL の常駐構成で、Cloudflare Workers／Pages 単体では動かない。
+- **実施したこと（ロゴ）**：`scripts/icons.ts` で ExPress マークから PNG アイコン（`icon-192.png`、`icon-512.png`、`icon-maskable-512.png`、`apple-touch-icon.png`）を生成し、manifest・Next metadata（icons／appleWebApp）・viewport themeColor・service worker の静的キャッシュ一覧へ反映。NORTHSTAR EC にも favicon を追加。本番起動で各アイコンが 200 で配信されることを確認。
+- **実施したこと（画面確認）**：`scripts/ui-gallery.ts` で本番ビルドを実操作しながら iPhone 13 幅 32 画面＋PC幅 5 画面を撮影し、スマートフォン閲覧用ギャラリーを Artifact として公開：https://claude.ai/code/artifact/c0707020-5e70-47a9-8cef-2370eab435fc（要 claude.ai ログイン、6.4 MB）。
+- **検証**：`pnpm run typecheck` 合格、E2E サブセット（PWA・別オリジン購入）4件合格、アイコン変更後の全 E2E：14 passed (1.1m)（production start、PostgreSQL 18.6）。単体スイートは API 変更がないため再実行していない（直前の 39/39 が最終）。
+- **実機で触るための選択肢**：(1) PC で `pnpm run start` を動かし、アカウント不要の `cloudflared tunnel --url` を Portal・API・EC の3つ分起動して得た URL を `.env` の `PORTAL_URL / API_URL / STORE_URL` に設定し再ビルド（Cookie は same-site、CSRF は Origin 完全一致で動作）。(2) Railway・Render・Fly.io などの Node ホスティング＋マネージド PostgreSQL に4サービスを配置し、Cloudflare は DNS／TLS の前段に置く（環境変数は `.env.example`、公開条件は `docs/security.md`）。(3) 同一 Wi-Fi の PC の LAN アドレスを各 URL に設定して起動し、スマートフォンから直接開く。

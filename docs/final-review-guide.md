@@ -2,6 +2,13 @@
 
 完成版を短時間で確認するための入口です。数値・日時の正本は [completion-report.md](completion-report.md)、要件ごとの対応は [requirements-matrix.md](requirements-matrix.md)。
 
+## 0. スマートフォンで画面を確認する
+
+- 画面ギャラリー（claude.ai Artifact、要ログイン）：https://claude.ai/code/artifact/c0707020-5e70-47a9-8cef-2370eab435fc
+  本番ビルドを起動し、Playwright（iPhone 13 相当 390px・2倍解像度、PC幅 1280px）で実際に操作しながら撮影した 37 画面。ウォレット→サンプルEC→チェックアウト→出荷・返金→加盟店→開発者→運営→デモ操作パネルの順。画像をタップすると拡大。
+- 再生成：4サービス起動後に `pnpm exec tsx scripts/ui-gallery.ts`（`.local/gallery/` に JPEG と manifest.json を出力）。アイコン PNG は `pnpm exec tsx scripts/icons.ts` で再生成。
+- 公開URLでの実機操作は、この作業環境からは提供できなかった（外向き通信の遮断と資格情報の不在）。実機で触るための3つの方法は [completion-report.md](completion-report.md) 第9節。
+
 ## 1. 完成品の所在と起動
 
 - GitHub `https://github.com/Atsushi-Odajima/ExPress`、ブランチ `claude/express-completion-delivery-e92pt1`（実装コミット `1f1d5746b173`、詳細は completion-report）。`main` は移管時点（`430d918`）のままで、完成版は上記ブランチにあります。

@@ -73,7 +73,7 @@ pnpm run test:e2e         # Playwright desktop / mobile（iPhone 13幅）— 4�
 
 DBテストは隔離workspaceを作成し、本物のPostgreSQLで100並列capture・同時残高・返金予約・期限切れ競合・DB制約・worker lease・プロセス停止回復・Webhook署名・SSRF・レート制限・定期課金を検査します。E2Eは別オリジンSDK購入→一部出荷→部分返金、Webhook 500再送・鍵更新・重複再送、模擬カード直接払いと元カード返金、Playground実注文と管理者の調整／反対仕訳、同時承認と100並列captureパネル、日英切替・QR・審査画面・権限なし表示・PWA・ダークモードを操作します。プロキシ環境では `NO_PROXY=localhost,127.0.0.1` を付けて実行してください。
 
-最新の実測（件数・日時・環境）は [docs/completion-report.md](docs/completion-report.md) に記録しています。テスト結果のスクリーンショット・トレースは `test-results/` と `playwright-report/` に出力され、Git対象外です。
+画面集の再生成は4サービス起動後に `pnpm exec tsx scripts/ui-gallery.ts`（`.local/gallery/`）、アイコン PNG は `pnpm exec tsx scripts/icons.ts`。最新の実測（件数・日時・環境）は [docs/completion-report.md](docs/completion-report.md) に記録しています。テスト結果のスクリーンショット・トレースは `test-results/` と `playwright-report/` に出力され、Git対象外です。
 
 ## 環境変数
 
