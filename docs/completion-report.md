@@ -93,4 +93,6 @@ E2E 7ケース：別オリジンSDK購入→一部出荷→部分返金／英語
 
 ## Git 記録
 
-（コミット後に追記）
+- 実装・文書のコミット：`1f1d5746b17337b87298dd278400981441ec8b1b`（ブランチ `claude/express-completion-delivery-e92pt1`、base `430d918`）。
+- push：`git push -u origin claude/express-completion-delivery-e92pt1` を実施（結果は本ファイルを含む後続コミットと GitHub のブランチで確認できる）。
+- `.env`・`.local`・`node_modules`・`dist`・`.next`・`test-results` はコミットに含まれない。
