@@ -43,3 +43,8 @@
 - シナリオ3（残高不足→チャージ→同じcheckoutを再承認）とシナリオ9（timeout_success→unknown→照会で1回だけ記帳）の自動テストを追加した。
 - 公開デプロイの追加依頼に対し、この環境では外向き通信が遮断され Cloudflare Tunnel も資格情報も使えないため実施しない。代わりに本番ビルドの実操作を Playwright で撮影した画面ギャラリー（`scripts/ui-gallery.ts`、Artifact 公開）を提供し、実機で触るための3方式を completion-report 第9節に記した。撮影は iPhone 13 相当 2倍解像度・JPEG 76% で 1 ページ 6.4 MB に収めた。
 - PWA アイコンは外部画像ツールに依存せず、Playwright 管理 Chromium で `public/logo.svg` と同じマークを PNG に描画する（`scripts/icons.ts`）。maskable 用は余白付きの全面ネイビー、Apple 用は 180px 全面。service worker のキャッシュ対象は静的アイコンのみ。
+- 公開向け構成は「Portal の `/api`・`/docs` 転送（`API_URL=<PORTAL_URL>/api`、転送先 `API_INTERNAL_URL`）」と「ECへのトップレベル遷移 `GET /connect?code=`」で Cookie をファーストパーティに保つ。理由：`trycloudflare.com`・`onrender.com`・`fly.dev` などは Public Suffix List に載り、サブドメイン間は cross-site となって `SameSite=Lax` Cookie が `fetch` に送られず、Safari はサードパーティ Cookie を遮断するため。`COOKIE_SAMESITE=none` は用意したが既定にしない。
+- 公開手段は2系統を用意した：アカウント不要の Cloudflare クイックトンネル（`scripts/tunnel.ts`：2本のトンネル、`.env` の退避・書き換え・復元、再ビルド、起動、QR表示）と、1イメージ4プロセスの `Dockerfile`＋Render Blueprint（`render.yaml`）。実配備は利用者のアカウントで行う作業とし、この環境では行わない。
+- `WORKER_IN_API=true` を追加：無料枠に常駐 worker がないホスト向けに、API プロセス内で同じ `tick()` ループを回す明示的な選択肢。既定は従来どおり独立 worker。
+- `LISTEN_HOST`（既定 127.0.0.1、コンテナでは 0.0.0.0）と `PORT` フォールバック（`API_PORT`／`STORE_PORT`／`PORTAL_PORT` 未指定時）を追加し、Playground と EC のサーバー間呼び出しは公開 `API_URL` ではなく `API_INTERNAL_URL` を使う。
+- E2E 1 は Portal の「NORTHSTAR STOREへ」ボタン経由（`GET /connect`）に変更し、無効コードの 401 と戻りリンクも検証する。E2E 4 は従来の `POST /connect` を残して両経路を保つ。

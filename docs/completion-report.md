@@ -106,3 +106,15 @@ E2E 7ケース：別オリジンSDK購入→一部出荷→部分返金／英語
 - **実施したこと（画面確認）**：`scripts/ui-gallery.ts` で本番ビルドを実操作しながら iPhone 13 幅 32 画面＋PC幅 5 画面を撮影し、スマートフォン閲覧用ギャラリーを Artifact として公開：https://claude.ai/code/artifact/c0707020-5e70-47a9-8cef-2370eab435fc（要 claude.ai ログイン、6.4 MB）。
 - **検証**：`pnpm run typecheck` 合格、E2E サブセット（PWA・別オリジン購入）4件合格、アイコン変更後の全 E2E：14 passed (1.1m)（production start、PostgreSQL 18.6）。単体スイートは API 変更がないため再実行していない（直前の 39/39 が最終）。
 - **実機で触るための選択肢**：(1) PC で `pnpm run start` を動かし、アカウント不要の `cloudflared tunnel --url` を Portal・API・EC の3つ分起動して得た URL を `.env` の `PORTAL_URL / API_URL / STORE_URL` に設定し再ビルド（Cookie は same-site、CSRF は Origin 完全一致で動作）。(2) Railway・Render・Fly.io などの Node ホスティング＋マネージド PostgreSQL に4サービスを配置し、Cloudflare は DNS／TLS の前段に置く（環境変数は `.env.example`、公開条件は `docs/security.md`）。(3) 同一 Wi-Fi の PC の LAN アドレスを各 URL に設定して起動し、スマートフォンから直接開く。
+
+## 10. 追加依頼：公開手段の作成（2026-09-13 22:15〜22:45 UTC）
+
+依頼：「Supabase等のPostgreSQL＋Node ホスティング（Cloudflare は前段）」または「PC＋cloudflared クイックトンネル」の計画で作成する。手順書は [deploy.md](deploy.md)。
+
+- **追加したもの**：`scripts/tunnel.ts`（アカウント不要のクイックトンネル2本、`.env` 退避・書き換え・復元、再ビルド、起動、QR表示）、`Dockerfile`／`.dockerignore`（1イメージ4プロセス）、`render.yaml`（無料枠向け Blueprint）、`docs/deploy.md`。
+- **アプリ側の変更**：Portal が `/api/*` と `/docs` を `API_INTERNAL_URL` へ同一オリジン転送（`API_URL=<PORTAL_URL>/api` を許可）。EC への引き渡しをトップレベル遷移 `GET /connect?code=`（一度限り・5分失効、無効時は 401 と戻りリンク）に変更し、`POST /connect` も維持。`LISTEN_HOST`・`PORT` フォールバック・`COOKIE_SAMESITE`・`WORKER_IN_API` を追加。Playground と EC のサーバー間呼び出しは `API_INTERNAL_URL` を使用。理由（Public Suffix List と Cookie）は [decisions.md](decisions.md) と [security.md](security.md)。
+- **検証（同一オリジン構成）**：`.env` を `API_URL=http://localhost:3000/api`・`API_INTERNAL_URL=http://127.0.0.1:4000` にして `pnpm run build` → `pnpm run start` → `/api/v1/health` 200・`Set-Cookie` 通過・OpenAPI `servers` が `http://localhost:3000/api`・`/docs`／`/docs/static/*`／`/docs/json` 200 を確認 → `pnpm run test:e2e`：**14 passed (1.2m)**（desktop・mobile、production start、PostgreSQL 18.6、Playwright 管理 Chromium）。E2E 1 は Portal の「NORTHSTAR STOREへ」から `GET /connect` 経由で EC に接続し、無効コードの 401 も検証。途中、同じサービスに対する E2E を誤って2本同時に走らせた回は 2 件失敗（ダイアログ二重表示・trace ファイル競合）したが、単独で再実行した最終回は 14/14。
+- **検証（Docker）**：`docker build`（node:24-bookworm-slim、この環境の代理CAを追加した一時変種で実行、本体の `Dockerfile` と差分は CA の3行のみ）成功。イメージから API（migration 実行後に起動）・EC・Portal を Compose の PostgreSQL 18.6 に接続して起動し、`/v1/health`・EC `/`・Portal `/wallet`・Portal 経由 `/api/v1/health`・`/docs` がすべて 200。`WORKER_IN_API=true` で API を起動すると worker ループ開始ログが出て、`POST /v1/demo/start` 200。
+- **検証（トンネルスクリプト）**：スタブ `cloudflared`（実物と同じ形式で URL を stderr に出力）で `--skip-build --skip-start` を実行し、`PORTAL_URL`／`API_URL=<Portal>/api`／`STORE_URL`／`API_INTERNAL_URL`／`WEBHOOK_ALLOWLIST`／`DEMO_MODE` の書き込み、終了時の `.env` 復元とバックアップ削除、`--keep-env` 時の保持、バイナリ不在時のエラーメッセージを確認。
+- **最終確認**：`pnpm run typecheck` 合格、`pnpm run test` **39/39**（22:39 UTC、PostgreSQL 18.6）、`.env` は作業前の内容に復元済み。
+- **未実施（正直な区分）**：実際の Cloudflare クイックトンネル接続（この環境は外向き通信が遮断され、cloudflared の取得も 403）、Render／Railway／Fly.io／Supabase への実配備、独自ドメイン・Cloudflare DNS。無料枠の条件（常駐 worker の有無、DBの期限・停止）は各社の最新の規約を確認する必要があり、ここでは契約・課金を一切行っていない。

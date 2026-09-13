@@ -35,9 +35,9 @@ test('Playgroundのcurl例はbody/Content-Typeを含み、シェルごとに安�
 
 test('Playground APIは実注文を作成し、返したPOSIX curl例はそのまま実行できる',async()=>{
  const seed=await createWorkspace(true);workspaces.push(seed.workspace);
- const app=await buildApp(),previousApiUrl=config.apiUrl;
+ const app=await buildApp(),previousApiUrl=config.apiUrl,previousInternalUrl=config.apiInternalUrl;
  try{
-  const base=await app.listen({host:'127.0.0.1',port:0});config.apiUrl=base;
+  const base=await app.listen({host:'127.0.0.1',port:0});config.apiUrl=base;config.apiInternalUrl=base;
   const owner=await transaction({workspace:seed.workspace,generation:1,actor:'test',role:'system',scopes:[],requestId:'playground-test'},async tx=>newSession(tx,(await tx.rows('users',"AND data->>'preset'='merchant1_owner'"))[0]));
   const headers={cookie:'exw_session='+owner.token,origin:config.portalUrl,'x-csrf-token':owner.csrf};
   const key="pg-'quoted'-"+randomUUID(),body={merchant_order_id:"PLAYGROUND-IT'S-001",amount:money(1000n),items:[{name:'デモ商品',quantity:1,unit_amount:money(1000n)}]};
@@ -56,5 +56,5 @@ test('Playground APIは実注文を作成し、返したPOSIX curl例はその�
   const unauthenticated=JSON.parse((await run('sh',['-c',result.curl+' -sS'],{env:{...env,EXW_ACCESS_TOKEN:'missing'}})).stdout);assert.equal(unauthenticated.error.code,'UNAUTHENTICATED');
   // A different key with the same input creates a second order only if the merchant reference differs; the same reference is rejected as a duplicate business event.
   const duplicate=JSON.parse((await run('sh',['-c',result.curl.replace("'Idempotency-Key: "+key.replace(/'/g,`'"'"'`)+"'","'Idempotency-Key: other-"+randomUUID()+"'")+' -sS'],{env})).stdout);assert.equal(duplicate.error?.code,'INVALID_STATE');
- }finally{config.apiUrl=previousApiUrl;await app.close();}
+ }finally{config.apiUrl=previousApiUrl;config.apiInternalUrl=previousInternalUrl;await app.close();}
 });

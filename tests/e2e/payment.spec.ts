@@ -29,10 +29,11 @@ test('英語切替・加盟店検索・共有QR・運営者の能力別設定',a
 
 test('WebhookでECが支払済みに収束、500再送・鍵更新・重複・順序逆転で二重発送なし',async({page,request})=>{
  await page.goto('/wallet');await page.getByRole('button',{name:'デモウォレットをはじめる'}).click();await expect(page.locator('.hero-balance')).toContainText('30,000');
- const exwSession=(await (await page.request.get(API+'/v1/session')).json());
- const ph={origin:PORTAL,'x-csrf-token':exwSession.csrf};const handoff=await (await page.request.post(API+'/v1/demo/store-handoff',{headers:ph,data:{}})).json();
- expect((await page.request.post(STORE+'/connect',{headers:{origin:PORTAL},data:{code:handoff.code}})).ok()).toBeTruthy();
- const ss=await (await page.request.get(STORE+'/api/session')).json(),sh={origin:STORE,'x-csrf-token':ss.csrf};
+ // The Portal hands the visitor to the store with a top-level navigation (GET /connect?code=), so the store cookie is first-party even on public-suffix hosts.
+ const invalid=await page.request.get(STORE+'/connect?code='+'x'.repeat(20),{maxRedirects:0});expect(invalid.status()).toBe(401);expect(await invalid.text()).toContain(PORTAL+'/wallet');
+ await page.getByRole('button',{name:'NORTHSTAR STOREへ'}).click();await expect(page).toHaveURL(STORE+'/');await page.goto(STORE+'/orders');await expect(page.locator('#app')).toContainText('購入はまだありません');
+ const ss=await (await page.request.get(STORE+'/api/session')).json(),sh={origin:STORE,'x-csrf-token':ss.csrf};expect(typeof ss.csrf).toBe('string');
+ const exwSession=await (await page.request.get(API+'/v1/session')).json(),ph={origin:PORTAL,'x-csrf-token':exwSession.csrf};
  expect((await page.request.post(STORE+'/api/demo/rotate-webhook',{headers:sh,data:{}})).ok()).toBeTruthy();await page.request.post(STORE+'/api/demo/webhook-failures',{headers:sh,data:{count:1}});
  const order=await (await page.request.post(STORE+'/api/orders',{headers:{...sh,'idempotency-key':crypto.randomUUID()},data:{mode:'immediate',items:[{id:'headphones',quantity:1}]}})).json();
  await page.goto(order.checkout_url);await page.locator('#challenge').check();await page.getByRole('button',{name:'この内容で支払いを承認'}).click();await page.getByRole('button',{name:'内容を確認',exact:true}).click();await page.getByRole('button',{name:'確認して実行',exact:true}).click();await expect(page.getByRole('button',{name:'店舗に戻って確認する'})).toBeVisible();
