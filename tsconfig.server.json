@@ -1,0 +1,6 @@
+{
+ "extends":"./tsconfig.json",
+ "compilerOptions":{"module":"NodeNext","moduleResolution":"NodeNext","noEmit":false,"outDir":"dist","rootDir":".","declaration":true,"rewriteRelativeImportExtensions":true},
+ "include":["apps/api/src/**/*.ts","apps/worker/src/**/*.ts","apps/demo-store/src/**/*.ts","packages/database/src/**/*.ts","packages/domain/src/**/*.ts","packages/contracts/src/**/*.ts","packages/sdk-server/src/**/*.ts","packages/sdk-browser/src/**/*.ts","packages/testkit/src/**/*.ts"],
+ "exclude":["node_modules","dist"]
+}

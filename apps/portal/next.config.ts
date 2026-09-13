@@ -1,0 +1,2 @@
+import type {NextConfig} from 'next';
+const config:NextConfig={reactStrictMode:true,devIndicators:false,poweredByHeader:false,experimental:{externalDir:true},env:{NEXT_PUBLIC_EXW_API_URL:process.env.API_URL??'http://localhost:4000',NEXT_PUBLIC_EXW_STORE_URL:process.env.STORE_URL??'http://localhost:3001'},async headers(){return [{source:'/:path*',headers:[{key:'X-Frame-Options',value:'DENY'},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'no-referrer'},{key:'Cache-Control',value:'no-store'}]}];}};export default config;
