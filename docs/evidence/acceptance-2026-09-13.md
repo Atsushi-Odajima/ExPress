@@ -113,3 +113,26 @@ e2e exit=0
 ```
 
 同じスイートは受入チェーン内（07:16Z、38件時点）とシステムPostgreSQL 16.13（07:06Z、38件時点）でも全件合格した。
+
+## 追加検証：PWA アイコン追加後の全 E2E（production start、PostgreSQL 18.6）
+
+```text
+=== 2026-09-13T09:34:14Z full e2e after icon/PWA change (production start, PG18.6) ===
+Running 14 tests using 1 worker
+  ✓   1 [desktop] › tests/e2e/payment.spec.ts:3:1 › 別オリジンSDK購入 → 一部出荷 → 部分返金 (3.0s)
+  ✓   2 [desktop] › tests/e2e/payment.spec.ts:19:1 › 英語切替・加盟店検索・共有QR・運営者の能力別設定 (2.8s)
+  ✓   3 [desktop] › tests/e2e/payment.spec.ts:30:1 › WebhookでECが支払済みに収束、500再送・鍵更新・重複・順序逆転で二重発送なし (4.6s)
+  ✓   4 [desktop] › tests/e2e/payment.spec.ts:51:1 › 加盟店・運営者・PWA・ダークモード (2.2s)
+  ✓   5 [desktop] › tests/e2e/payment.spec.ts:61:1 › 模擬カード直接払いと元カード返金、英語ECでも財布は増減しない (7.0s)
+  ✓   6 [desktop] › tests/e2e/payment.spec.ts:70:1 › Playgroundで実注文作成・APIログ・管理者の調整仕訳と反対仕訳 (7.6s)
+  ✓   7 [desktop] › tests/e2e/payment.spec.ts:79:1 › デモパネルの同時承認で過剰使用を防ぎ、100重複captureが1回になる (2.9s)
+  ✓   8 [mobile] › tests/e2e/payment.spec.ts:3:1 › 別オリジンSDK購入 → 一部出荷 → 部分返金 (3.4s)
+  ✓   9 [mobile] › tests/e2e/payment.spec.ts:19:1 › 英語切替・加盟店検索・共有QR・運営者の能力別設定 (3.4s)
+  ✓  10 [mobile] › tests/e2e/payment.spec.ts:30:1 › WebhookでECが支払済みに収束、500再送・鍵更新・重複・順序逆転で二重発送なし (3.7s)
+  ✓  11 [mobile] › tests/e2e/payment.spec.ts:51:1 › 加盟店・運営者・PWA・ダークモード (2.1s)
+  ✓  12 [mobile] › tests/e2e/payment.spec.ts:61:1 › 模擬カード直接払いと元カード返金、英語ECでも財布は増減しない (9.3s)
+  ✓  13 [mobile] › tests/e2e/payment.spec.ts:70:1 › Playgroundで実注文作成・APIログ・管理者の調整仕訳と反対仕訳 (7.6s)
+  ✓  14 [mobile] › tests/e2e/payment.spec.ts:79:1 › デモパネルの同時承認で過剰使用を防ぎ、100重複captureが1回になる (3.2s)
+  14 passed (1.1m)
+=== 2026-09-13T09:35:20Z done ===
+```
