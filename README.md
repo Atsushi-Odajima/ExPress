@@ -6,7 +6,7 @@
 
 **実装・検証の最新状況と残項目は [implementation-status.md](docs/implementation-status.md) を参照してください。全要件の完成判定前です。**
 
-**別PC・クラウドへの引き継ぎ入口：** [取得・起動手順](docs/CLOUD-START.md) → [完成までの指示](docs/COMPLETION-PROMPT.md) → [詳細引き継ぎ](docs/HANDOFF.md)。[ユーザー開発仕様の原文](docs/SPECIFICATION.md)もリポジトリに保存しています。以前の初期READMEだけのcloneは、mainを更新して実装一式を取得してください。Windowsの元フォルダーへ接続する必要はありません。
+**別PC・クラウドへの引き継ぎ入口：** [取得・起動手順](docs/CLOUD-START.md) → [完成までの指示](docs/COMPLETION-PROMPT.md) → [詳細引き継ぎ](docs/HANDOFF.md)。[ユーザー開発仕様の原文](docs/SPECIFICATION.md)も保存しています。[ソースのpush・別clone検証済み](docs/TRANSFER-VERIFIED.md)です。以前の初期READMEだけのcloneは、mainを更新して実装一式を取得してください。Windowsの元フォルダーへ接続する必要はありません。
 
 ## 必要環境
 

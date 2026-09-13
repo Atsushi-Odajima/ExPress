@@ -2,7 +2,7 @@
 
 最終確認：2026-09-13。次の担当エージェントに、このファイル全体を開発引き継ぎプロンプトとして渡してください。
 
-**移管更新：この資料・実装ソース・ユーザー仕様原文をGit経由で共有するため、リポジトリへ追加しています。取得は[CLOUD-START.md](CLOUD-START.md)から開始してください。クラウドでは元Windowsパスへのアクセスは不要です。[SPECIFICATION.md](SPECIFICATION.md)が未着だった原仕様の全文です。以下の「未コミット」は初回引き継ぎ時点の履歴として読み、取得したcommitとgit statusを現在の正としてください。**
+**移管更新：実装・本資料・ユーザー仕様原文をcommit `c47113f`でGitHub mainへpushし、別フォルダーへのclone検証まで完了しました。[検証記録](TRANSFER-VERIFIED.md)を参照。取得は[CLOUD-START.md](CLOUD-START.md)から開始してください。クラウドでは元Windowsパスへのアクセスは不要です。[SPECIFICATION.md](SPECIFICATION.md)が未着だった原仕様の全文です。以下の「未コミット」は初回引き継ぎ時点の履歴です。**
 
 ## 1. 次の担当者への依頼
 
@@ -19,7 +19,7 @@
 - GitHub： https://github.com/Atsushi-Odajima/ExPress
 - origin：`https://github.com/Atsushi-Odajima/ExPress.git`
 - 現在ブランチ：`main`
-- HEAD：`8929459 Initial commit`
+- 初回引き継ぎのHEAD：`8929459 Initial commit`。その後のソース移管commitは`c47113f`。
 - 実装があるローカルパス：`C:\Users\kuroa\Documents\Codex\2026-09-10\express-codex-0-ec-express-db`
 - **初回引き継ぎ時点は実装一式が未コミット・未pushでした。この移管で実装をGit管理に追加しています。本ファイルとアプリ一式を含むmainを取得すれば、Gitから引き継げます。** `8929459`だけのcloneは更新が必要です。
 - 最終確認のgit status：`README.md`が変更済み。`apps/`、`packages/`、`scripts/`、`tests/`、`docs/`、`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`、各tsconfig、`.env.example`、`.gitignore`、`compose.yaml`、`playwright.config.ts`は未追跡。
@@ -361,7 +361,7 @@ pnpm run test:e2e
 
 ### 第1段階：受入計画を実装に結び付ける
 
-元の開発指示書が添付されていれば、それを要件の正本とすること。このMDの「実装済み」は前担当の実装説明であり、独立した検収結果ではありません。`docs/requirements-matrix.md`を新規作成し、ウォレット／加盟店／開発者／運営／checkout／API／SDK／EC／台帳／worker／デモ／UI／セキュリティ／起動・文書の全必須範囲について、対応コード、検証、残件を紐付けてください。
+`docs/SPECIFICATION.md`に保存した元の開発指示書を要件の正本とすること。このMDの「実装済み」は前担当の実装説明であり、独立した検収結果ではありません。`docs/requirements-matrix.md`を新規作成し、ウォレット／加盟店／開発者／運営／checkout／API／SDK／EC／台帳／worker／デモ／UI／セキュリティ／起動・文書の全必須範囲について、対応コード、検証、残件を紐付けてください。
 
 一覧には少なくとも「未実装」「実装済み・未検証」「検証合格」「検証失敗」「環境により未検証」を分け、設計だけ、ルートだけ、ボタンだけを完成と数えないでください。元仕様で必須だったものを任意項目へ変更して終了しないでください。
 
