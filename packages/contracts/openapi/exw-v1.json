@@ -20079,7 +20079,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Allowed roles: owner. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Allowed roles: owner. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -20394,7 +20394,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Allowed roles: owner, developer. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Allowed roles: owner, developer. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -20705,7 +20705,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -21020,7 +21020,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Allowed roles: owner, developer. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Allowed roles: owner, developer. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -21321,7 +21321,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Allowed roles: owner, developer. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Allowed roles: owner, developer. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -22304,7 +22304,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: orders:write. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: orders:write. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -22903,7 +22903,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: webhooks:manage. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: webhooks:manage. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -23554,7 +23554,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: webhooks:manage. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: webhooks:manage. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -23868,7 +23868,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: webhooks:manage. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: webhooks:manage. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "parameters": [
           {
             "schema": {
@@ -24156,7 +24156,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: webhooks:manage. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: webhooks:manage. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -24457,7 +24457,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: webhooks:manage. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: webhooks:manage. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -24758,7 +24758,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: webhooks:manage. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: webhooks:manage. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -26722,7 +26722,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: subscriptions:write. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: subscriptions:write. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -27125,7 +27125,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: subscriptions:write. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: subscriptions:write. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -27528,7 +27528,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: subscriptions:write. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: subscriptions:write. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -27931,7 +27931,7 @@
         "tags": [
           "merchant"
         ],
-        "description": "Required scope: payments:read. Allowed roles: owner, support, finance, api. Session mutations require exact Origin and X-CSRF-Token.",
+        "description": "Required scope: payments:read. Allowed roles: owner, support, finance, api. Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -33445,7 +33445,200 @@
         ],
         "responses": {
           "200": {
-            "description": "Default Response"
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "latency_ms",
+                    "request_id",
+                    "response",
+                    "curl",
+                    "curl_powershell"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "latency_ms": {
+                      "type": "integer"
+                    },
+                    "request_id": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "response": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "curl": {
+                      "type": "string",
+                      "description": "POSIX shell example. Set EXW_ACCESS_TOKEN from POST /v1/oauth/token; the token itself is never embedded."
+                    },
+                    "curl_powershell": {
+                      "type": "string",
+                      "description": "Windows PowerShell / pwsh example using curl.exe and $env:EXW_ACCESS_TOKEN."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -36115,6 +36308,960 @@
           "admin"
         ],
         "description": "Session mutations require exact Origin and X-CSRF-Token.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/journals": {
+      "get": {
+        "summary": "仕訳の検索・cursorページング",
+        "tags": [
+          "admin"
+        ],
+        "description": "Session mutations require exact Origin and X-CSRF-Token.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "description": "前ページのnext_cursor。順序はUTC created_atとID。"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "in": "query",
+            "name": "q",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "in": "query",
+            "name": "status",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "in": "query",
+            "name": "from",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "in": "query",
+            "name": "to",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "csv"
+              ]
+            },
+            "in": "query",
+            "name": "format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/webhook-deliveries/{id}/retry": {
+      "post": {
+        "summary": "運営者による通知の再配信（理由を監査）",
+        "tags": [
+          "admin"
+        ],
+        "description": "Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 200
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id",
+                        "details"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/jobs/{id}/retry": {
+      "post": {
+        "summary": "失敗ジョブの再試行（理由を監査）",
+        "tags": [
+          "admin"
+        ],
+        "description": "Idempotency-Key optional: the same key with the same input replays the stored result; one-time secrets are not repeated. Session mutations require exact Origin and X-CSRF-Token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
         "parameters": [
           {
             "schema": {

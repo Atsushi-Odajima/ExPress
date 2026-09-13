@@ -44,3 +44,15 @@ test('outbox commit後の停止・配信lease回復・500再送・移行中二�
   responseCode=500;await deliverOne(ctx);assert.equal(verifyWebhook(received.at(-1)!.raw,received.at(-1)!.signature,[old]),false);assert.equal(verifyWebhook(received.at(-1)!.raw,received.at(-1)!.signature,[secret]),true);assert.equal((await transaction(ctx,tx=>tx.rows('webhook_deliveries',"AND status='dead_letter'"))).length,1);
  }finally{config.storeUrl=previousUrl;config.webhookAllowlist.splice(config.webhookAllowlist.indexOf(url),1);await new Promise<void>(r=>server.close(()=>r()));}
 });
+
+test('シナリオ9: providerのtimeout_successはunknownとして扱い、照会ジョブで1回だけ記帳する',async()=>{
+ const ctx=await fixture();const t=await transaction(ctx,tx=>topup(tx,{amount:money(500n)}));
+ const attempt=(await transaction(ctx,tx=>tx.rows('provider_attempts','AND parent_id=$3',[t.id])))[0];
+ await transaction(ctx,async tx=>{await tx.create('scenarios',{parent_id:attempt.id,data:{mode:'timeout_success'}});await tx.db.query("UPDATE demo_workspaces SET settings=settings||'{\"worker_paused\":false}'::jsonb WHERE id=$1",[ctx.workspace]);});
+ let job=await claimJob(ctx.workspace);assert.ok(job);await runJob(job!);
+ assert.equal((await transaction(ctx,tx=>tx.get('provider_attempts',attempt.id))).status,'unknown');assert.equal((await transaction(ctx,tx=>tx.get('topups',t.id))).status,'pending');assert.equal((await transaction(ctx,tx=>balances(tx,ctx.user!))).available,'30000','no new funds movement while the result is unknown');
+ await transaction(ctx,async tx=>{const j=await tx.get('jobs',job!.id);assert.equal(j.status,'pending');await tx.update('jobs',j.id,{data:{...j.data,run_at:new Date(Date.now()-1).toISOString()}});});
+ job=await claimJob(ctx.workspace);assert.ok(job);await runJob(job!);
+ assert.equal((await transaction(ctx,tx=>tx.get('provider_attempts',attempt.id))).status,'succeeded');assert.equal((await transaction(ctx,tx=>tx.get('topups',t.id))).status,'succeeded');assert.equal((await transaction(ctx,tx=>balances(tx,ctx.user!))).available,'30500');
+ assert.equal((await transaction(ctx,tx=>tx.rows('jobs'))).length,1);assert.equal((await transaction(ctx,tx=>tx.get('jobs',job!.id))).status,'succeeded');assert.equal(await claimJob(ctx.workspace),undefined);assert.equal((await transaction(ctx,reconciliation)).ok,true);
+});

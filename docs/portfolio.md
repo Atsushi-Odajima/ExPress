@@ -9,9 +9,11 @@ ExPressは自作の決済デモ。実預金、実送金、カード発行、カ�
 - workspace/generationの境界、RBAC・scope、CSRF、資格情報失効。
 - 独立worker、DB outbox、lease、HMAC Webhookと照会による回復。
 - 別オリジン・別DBのサンプルEC、サーバーSDKとブラウザSDK。
-- 100並列同一キーcapture、同時残高保護など本物のDBによるテスト。
+- 100並列同一キーcapture、同時残高保護など本物のDBによるテスト（単体・DB統合・worker・SDK・Playground 39件、Playwright desktop/mobile 14件。実測は completion-report.md）。
+- 運営者の注文timeline（配信・仕訳明細まで）、仕訳検索、理由付きの再送・再試行、加盟店の精算予定・請求周期履歴。
+- API Playgroundが表示するcurl例は、POSIX shで実際に実行し同一注文を再現するテストで検証。
 
-どの検証が合格したかは実装状況とテストログを併記する。API/画面が存在することと、全例外経路を検証済みであることは区別する。
+どの検証が合格したかは [completion-report.md](completion-report.md) と [requirements-matrix.md](requirements-matrix.md) を併記する。API/画面が存在することと、全例外経路を検証済みであることは区別する。
 
 ## 5分デモ
 

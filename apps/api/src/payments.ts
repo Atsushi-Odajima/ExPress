@@ -3,12 +3,12 @@ import {balances,journal,debit,credit} from '../../../packages/database/src/ledg
 import {amount,money,min,fee,ensure,canonical} from '../../../packages/domain/src/index.ts';
 import {hash,can,merchantOwn,userOwn,randomToken} from './security.ts';
 import {config} from '../../../packages/database/src/config.ts';
-export async function idempotent(tx:Tx,operation:string,target:string,key:string|undefined,input:unknown,fn:()=>Promise<unknown>) {
+export async function idempotent(tx:Tx,operation:string,target:string,key:string|undefined,input:unknown,fn:()=>Promise<unknown>,store:(result:unknown)=>unknown=r=>r) {
  ensure(key&&key.length>=8&&key.length<=200,'INVALID_REQUEST','Idempotency-Key（8〜200文字）が必要です。');
  const args=[tx.ctx.workspace,tx.ctx.generation,tx.ctx.actor,operation,target,key];const h=hash(canonical(input));
  const old=(await tx.db.query('SELECT * FROM idempotency_records WHERE workspace_id=$1 AND generation=$2 AND actor=$3 AND operation=$4 AND target=$5 AND key=$6',args)).rows[0];
  if(old){ensure(old.input_hash===h,'IDEMPOTENCY_CONFLICT','同じキーが異なる内容に使われています。',409);return old.response;}
- const result=await fn();await tx.db.query('INSERT INTO idempotency_records(workspace_id,generation,actor,operation,target,key,input_hash,response) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[...args,h,result]);return result;
+ const result=await fn();await tx.db.query('INSERT INTO idempotency_records(workspace_id,generation,actor,operation,target,key,input_hash,response) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[...args,h,store(result)]);return result;
 }
 export async function intent(tx:Tx,kind:string,resource:Row,token?:string) {
  const attempt=await tx.create('provider_attempts',{user_id:resource.user_id,merchant_id:resource.merchant_id,parent_id:resource.id,amount:resource.amount,status:'created',data:{kind,provider_token:token,resource_id:resource.id,operation_id:resource.id}});

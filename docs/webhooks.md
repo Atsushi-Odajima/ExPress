@@ -21,7 +21,7 @@ if (!verifyWebhook(rawBody, signatureHeader, [newKey, oldKey])) {
 
 鍵更新後24時間は `t=...,v1=新鍵署名,v1=旧鍵署名` を送信する。旧鍵だけを持つ受信者も移行中は受信できる。SDKは新旧鍵配列のいずれかに合う署名を検証する。24時間後は新鍵だけで送信し、受信側でも旧鍵を削除する。秘密鍵の再表示APIはない。サンプルECの「Webhook署名鍵を更新」はAPIで鍵を更新し、受信側の暗号化保存も更新する。
 
-workerのjob claimは `FOR UPDATE SKIP LOCKED`、15秒lease。Webhook配信もleaseを持つ。プロセス停止後、lease失効で回復する。失敗時は指数バックオフ＋jitter、最大6試行、dead_letter。手動再送は同じevent IDを参照する。通知失敗は決済成功を失敗へ戻さない。
+workerのjob claimは `FOR UPDATE SKIP LOCKED`、15秒lease。Webhook配信もleaseを持つ。プロセス停止後、lease失効で回復する。失敗時は指数バックオフ＋jitter、最大6試行、dead_letter。手動再送は同じevent IDを参照する。加盟店は `POST /v1/webhook-deliveries/{id}/retry`（任意のIdempotency-Keyで重複再送を防止）、運営者は `POST /v1/admin/webhook-deliveries/{id}/retry`（理由必須・監査ログ、処理中の配信は不可）で再送できる。通知失敗は決済成功を失敗へ戻さない。開発者ポータルのWebhookタブに `verifyWebhook` を使った署名検証例を表示する。
 
 ECは署名検証後、event IDで重複排除し、ExPress APIの最新状態へ照会する。状態はresource versionが古い場合に戻さない。発送はcapture_id一意で作成する。照会が失敗したらeventを受領済みにせず、再送で回復する。
 

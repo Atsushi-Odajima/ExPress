@@ -6,6 +6,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   embedded-postgres: true
+  '@embedded-postgres/linux-x64': true
 minimumReleaseAgeExclude:
   - react-dom@19.3.0
   - react@19.3.0

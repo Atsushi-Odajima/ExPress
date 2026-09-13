@@ -40,6 +40,8 @@ await exw.refund(captureId,
   'SHOP-001:return-1');
 ```
 
+Webhook通知先の登録・再送や購読のpause/cancelなど非金銭的な変更も、`Idempotency-Key`（`client.request(method,path,body,key)`）を付ければ同じキー・同じ入力で保存済み結果を返す。一度だけ表示の秘密は再送応答に含まれない。
+
 SDKはトークンを更新し、timeout/ExPressError/requestIdを返す。GETと冪等キー付きPOSTにのみ限定的再試行を行い、同じキーを維持する。再試行で別注文・別返金を生成しない。
 
 NORTHSTARはカタログ5点をサーバーに持ち、ブラウザから価格を受け付けない。EC注文を保存後、SDKでExPress注文とチェックアウトを作成する。入力キーとハッシュでEC側も重複を防ぐ。各captureに対する発送は一意制約で1件。
