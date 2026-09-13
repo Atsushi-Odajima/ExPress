@@ -65,7 +65,7 @@ Dockerを利用しない場合、利用可能なPostgreSQLサービスに専用`
 
 `pnpm run db:local`はembedded-postgresで実PostgreSQLを起動する代替です。前担当の実測はWindowsのみ。LinuxではCPU／配布バイナリ／OS依存ライブラリを確認してください。PostgreSQL initdbはroot実行不可のため、rootしかない環境では非rootの実行基盤か既存DBサービスが必要です。この事情を「実装ソースがない」と取り違えず、DB環境の課題として切り分けます。
 
-embedded-postgresの同梱READMEではpostinstallによるsymlink作成が必要です。Linuxでpnpmがネイティブ配布パッケージのbuildを停止した場合は、実際のCPUに対応する`@embedded-postgres/linux-x64`等とその固定バージョンを確認し、`pnpm-workspace.yaml`のallowBuildsを必要なパッケージだけ追加してください。現在の明示設定は検証済みWindows用で、Linuxのpostinstallは未検証です。
+embedded-postgresの同梱READMEではpostinstallによるsymlink作成が必要です。Linuxでpnpmがネイティブ配布パッケージのbuildを停止した場合は、実際のCPUに対応する`@embedded-postgres/linux-x64`等とその固定バージョンを確認し、`pnpm-workspace.yaml`のallowBuildsを必要なパッケージだけ追加してください。現在の明示設定はWindows用に加えて `@embedded-postgres/linux-x64` を含みます（第7節）。
 
 標準URLはPortal `http://localhost:3000`、EC `http://localhost:3001`、API `http://localhost:4000`。3000が使用中なら`PORTAL_PORT`と`PORTAL_URL`を一緒に変更。origin末尾にスラッシュを付けません。
 
@@ -73,7 +73,7 @@ API・EC・Portalはloopback待受です。クラウド内Playwrightは同じ環
 
 ## 4. Linuxの画面試験
 
-Windows既定はEdge、Linux/macOS既定はPlaywright管理のChromiumへ切り替えられる設定です。Linux/ChromiumのE2E結果はまだありません。
+Windows既定はEdge、Linux/macOS既定はPlaywright管理のChromiumへ切り替えられる設定です。Linux/ChromiumのE2E結果は第7節と [completion-report.md](completion-report.md) にあります。
 
 ```sh
 pnpm exec playwright install chromium
@@ -108,4 +108,11 @@ provider成功直後にworkerを停止する試験があるため、DB試験を�
 
 `.env`、`.local/keys.json`、元PCのPostgreSQLデータ、node_modules、dist、Next生成物、rawテストログ／トレースはGitに含めません。新環境では新しいデモ鍵・DB・workspaceを生成します。元PCの利用者データや秘密鍵は完成に不要です。Git管理の`.env.example`内のDBパスワードはローカルデモ専用の公開サンプル値です。
 
-アプリは完成判定前です。移管したことと不具合を修正したことを区別し、COMPLETION-PROMPTに従って残りを完成させてください。
+この節までは移管時点の記述です。完成作業の結果は第7節と [completion-report.md](completion-report.md) を参照してください。
+
+## 7. Linuxクラウド環境での実測（2026-09-13 完成作業）
+
+- Node 24.21.0は `nvm install 24`（`/opt/nvm`）で導入。`pnpm install --frozen-lockfile` 後、`pnpm-workspace.yaml` の allowBuilds に `@embedded-postgres/linux-x64: true` を追加して再インストールするとpostinstallが完了する（Git管理済み）。rootでは `pnpm db:local`（initdb）は使えない。
+- DBはDocker Compose（`docker compose up -d`、postgres:18.6、`127.0.0.1:54329`）で起動し、`.env` は `.env.example` のコピーのまま動作する。Dockerがない場合はシステムのPostgreSQL 16でも動作を確認済み：`exw`（SUPERUSER、`verify:clean` のDB作成に必要）と `exw_store`（NOSUPERUSER）を作成し、`REVOKE CONNECT ON DATABASE exw FROM PUBLIC` を適用して `.env` のポートを変更する。
+- Playwright 1.63.0は管理Chromium 1243が必要。`pnpm exec playwright install chromium` で取得。プロキシ環境では `NO_PROXY=localhost,127.0.0.1` を付けてE2Eを実行する。
+- 受入の実行順は `pnpm run typecheck` → `pnpm run test`（workerを止めた状態）→ `pnpm run verify:clean` → `pnpm run openapi` → `pnpm run build` → `pnpm run start` → `pnpm run test:e2e`。結果は [completion-report.md](completion-report.md)。

@@ -27,6 +27,8 @@
 
 利用者のcan_payを止めても、既存承認に対する加盟店captureは加盟店can_captureが有効なら許可する。結果不明のプロバイダー操作は制限状態に関わらず照会・解決し、保留資金を不整合なまま放置しない。
 
+Portalは必要scopeを満たさないrole（例：read_onlyの出金画面・開発者ポータル）に「権限なし」を表示し、操作ボタンを描画しない。APIは画面に関係なくscope・roleで拒否する。任意Idempotency-Keyの再送応答から一度表示の秘密（client_secret／webhook_secret）を除外する。
+
 加盟店role：ownerは全scope、developerは注文/開発者管理/購読設定、financeは確定/返金/残高/出金、supportは照会/返金/案件、read_onlyは読取。詳細は `security.ts` のroleScopesを参照。
 
 ## 公開前の確認

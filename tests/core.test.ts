@@ -213,3 +213,53 @@ test('削除済み模擬カードで新規継続課金を開始しない',async(
  await transaction(f.ctx,tx=>consent(tx,s.id,{accept:true,source:method.id}));await transaction(f.ctx,tx=>tx.update('payment_methods',method.id,{status:'deleted'}));await maintenance(f.ctx);
  assert.equal((await transaction(f.ctx,tx=>tx.get('subscriptions',s.id))).status,'past_due');assert.equal((await transaction(f.ctx,tx=>tx.rows('provider_attempts'))).length,0);assert.equal((await transaction(f.ctx,tx=>balances(tx,f.ctx.user!))).available,'30000');assert.equal((await transaction(f.ctx,reconciliation)).ok,true);
 });
+
+test('任意Idempotency-Keyの再配信は1回、運営者の仕訳検索・通知再送・ジョブ再試行・timeline拡張、加盟店概要の精算ロット',async()=>{
+ const f=await fixture(),a=await f.authorize(1000n);await transaction(f.mc,tx=>capture(tx,a.id,{amount:money(1000n),final_capture:true}));await maintenance({...f.ctx,role:'system'});await maintenance({...f.ctx,role:'system'});
+ const app=await buildApp();try{
+  const secret=randomUUID(),credential=await transaction(f.mc,tx=>tx.create('credentials',{merchant_id:f.mc.merchant,data:{client_id:randomUUID(),secret_hash:hash(secret),scopes:[...scopes]}}));
+  const token=(await app.inject({method:'POST',url:'/v1/oauth/token',payload:{grant_type:'client_credentials',client_id:credential.data.client_id,client_secret:secret}})).json().access_token,bearer={authorization:'Bearer '+token};
+  const delivery=(await transaction(f.ctx,tx=>tx.rows('webhook_deliveries')))[0];assert.ok(delivery,'maintenance materialized a delivery for the capture event');
+  const key='retry-'+randomUUID(),retry=()=>app.inject({method:'POST',url:'/v1/webhook-deliveries/'+delivery.id+'/retry',headers:{...bearer,'idempotency-key':key},payload:{}});
+  const first=await retry(),second=await retry();assert.equal(first.statusCode,200);assert.equal(second.json().id,first.json().id);
+  assert.equal((await transaction(f.ctx,tx=>tx.rows('webhook_deliveries',"AND data->>'manual'='true'"))).length,1,'the optional key replays instead of creating a second manual delivery');
+  assert.equal((await app.inject({method:'POST',url:'/v1/webhook-deliveries/'+delivery.id+'/retry',headers:{...bearer,'idempotency-key':key},payload:{}})).json().id,first.json().id);
+  const rotated=await app.inject({method:'POST',url:'/v1/webhook-endpoints/'+delivery.data.endpoint_id+'/rotate-secret',headers:{...bearer,'idempotency-key':'rotate-'+key},payload:{}});assert.ok(rotated.json().webhook_secret);
+  assert.equal((await app.inject({method:'POST',url:'/v1/webhook-endpoints/'+delivery.data.endpoint_id+'/rotate-secret',headers:{...bearer,'idempotency-key':'rotate-'+key},payload:{}})).json().webhook_secret,undefined,'a replay never repeats the one-time secret');
+  const overview=(await app.inject({url:'/v1/merchant/overview',headers:bearer})).json();assert.equal(overview.settlement_lots.length,1);assert.ok(Array.isArray(overview.billing_cycles));
+  const admin=await transaction(f.ctx,async tx=>newSession(tx,(await tx.rows('users',"AND data->>'preset'='admin'"))[0])),ah={cookie:'exw_session='+admin.token,origin:config.portalUrl,'x-csrf-token':admin.csrf};
+  const journals=(await app.inject({url:'/v1/admin/journals?q=capture%3A&limit=5',headers:ah})).json();assert.equal(journals.data.length,1);assert.match(journals.data[0].business_event,/^capture:/);assert.equal(journals.data[0].amount,'1000');assert.equal(journals.data[0].lines,3);
+  const page1=(await app.inject({url:'/v1/admin/journals?limit=2',headers:ah})).json();assert.ok(page1.next_cursor);const page2=(await app.inject({url:'/v1/admin/journals?limit=2&cursor='+page1.next_cursor,headers:ah})).json();assert.ok(page2.data.length>=1);assert.ok(!page2.data.some((j:any)=>page1.data.some((k:any)=>k.id===j.id)));
+  assert.equal((await app.inject({url:'/v1/admin/journals?cursor=broken',headers:ah})).statusCode,400);
+  const timeline=(await app.inject({url:'/v1/admin/timeline/'+a.parent_id,headers:ah})).json();assert.ok(timeline.deliveries.length>=1);assert.ok(timeline.journals.length>=2&&timeline.journals.every((j:any)=>j.lines.length>=2));assert.equal(timeline.settlement_lots.length,1);assert.ok(!JSON.stringify(timeline).includes('secret'));
+  assert.equal((await app.inject({method:'POST',url:'/v1/admin/webhook-deliveries/'+delivery.id+'/retry',headers:ah,payload:{reason:'処理中は再送不可'}})).statusCode,400,'a pending delivery cannot be resent');
+  await transaction(f.ctx,tx=>tx.update('webhook_deliveries',delivery.id,{status:'dead_letter'}));
+  const adminRetry=await app.inject({method:'POST',url:'/v1/admin/webhook-deliveries/'+delivery.id+'/retry',headers:ah,payload:{reason:'運営者による再送確認'}});assert.equal(adminRetry.statusCode,200);assert.equal(adminRetry.json().data.actor,'admin');
+  assert.equal((await app.inject({method:'POST',url:'/v1/admin/webhook-deliveries/'+delivery.id+'/retry',headers:{cookie:'exw_session='+f.seed.token,origin:config.portalUrl,'x-csrf-token':f.seed.csrf},payload:{reason:'消費者は不可'}})).statusCode,403);
+  const job=await transaction(f.ctx,async tx=>{const t=await topup(tx,{amount:money(100n)});const j=(await tx.rows('jobs','AND parent_id IS NOT NULL ORDER BY created_at DESC'))[0];return tx.update('jobs',j.id,{status:'failed',data:{...j.data,tries:8,last_error:'TEST'}});});
+  const jobRetry=await app.inject({method:'POST',url:'/v1/admin/jobs/'+job.id+'/retry',headers:ah,payload:{reason:'テスト用の失敗ジョブを再試行'}});assert.equal(jobRetry.statusCode,200);assert.equal(jobRetry.json().status,'pending');assert.equal(jobRetry.json().data.tries,0);
+  assert.ok((await transaction(f.ctx,tx=>tx.rows('audit_logs',"AND data->>'action' IN ('webhook.retry','job.retry')"))).length>=2);
+ }finally{await app.close();}
+});
+
+test('シナリオ3: 残高不足のcheckoutは承認失敗後もcreatedのまま、チャージ後に同じcheckoutを再承認できる',async()=>{
+ const f=await fixture(1000n);const o=await transaction(f.mc,tx=>createOrder(tx,{merchant_order_id:randomUUID(),amount:money(5000n),items:[{name:'Big',quantity:1,unit_amount:money(5000n)}]}));
+ const s=await transaction(f.mc,tx=>createCheckout(tx,{order_id:o.id,return_url:config.storeUrl+'/return',cancel_url:config.storeUrl+'/cancel'}));
+ const approveNow=()=>transaction(f.ctx,async tx=>{const c=await tx.get('checkouts',s.id);await tx.update('checkouts',c.id,{data:{...c.data,bound_session:f.ctx.session}});return approve(tx,s.id,{source:'wallet',challenge:true});});
+ await assert.rejects(approveNow(),{code:'INSUFFICIENT_FUNDS'});
+ assert.equal((await transaction(f.ctx,tx=>tx.get('checkouts',s.id))).status,'created');assert.equal((await transaction(f.ctx,tx=>balances(tx,f.ctx.user!))).available,'1000');assert.equal((await transaction(f.ctx,tx=>tx.rows('authorizations'))).length,0);
+ const t=await transaction(f.ctx,tx=>topup(tx,{amount:money(4000n)}));const at=(await transaction(f.ctx,tx=>tx.rows('provider_attempts','AND parent_id=$3',[t.id])))[0];await transaction(f.ctx,tx=>applyProvider(tx,at,'succeeded'));
+ const a=await approveNow();assert.equal(a.status,'authorized');const b=await transaction(f.ctx,tx=>balances(tx,f.ctx.user!));assert.equal(b.available,'0');assert.equal(b.held,'5000');assert.equal((await transaction(f.ctx,tx=>tx.get('checkouts',s.id))).status,'approved');assert.equal((await transaction(f.ctx,reconciliation)).ok,true);
+});
+
+test('シナリオ5: 未captureオーソリは業務時計の期限切れでworkerが解放し、authorization.expiredを配信する',async()=>{
+ const f=await fixture(),a=await f.authorize(3000n);let b=await transaction(f.ctx,tx=>balances(tx,f.ctx.user!));assert.equal(b.held,'3000');assert.equal(b.available,'27000');
+ await maintenance({...f.ctx,role:'system'});assert.equal((await transaction(f.ctx,tx=>tx.get('authorizations',a.id))).status,'authorized','not expired before the 24h deadline');
+ await pool.query('UPDATE demo_workspaces SET clock_offset=$2 WHERE id=$1',[f.ctx.workspace,90000*1000]);await maintenance({...f.ctx,role:'system'});
+ const expired=await transaction(f.ctx,tx=>tx.get('authorizations',a.id));assert.equal(expired.status,'expired');assert.equal(expired.released,'3000');assert.equal(expired.captured,'0');
+ b=await transaction(f.ctx,tx=>balances(tx,f.ctx.user!));assert.equal(b.held,'0');assert.equal(b.available,'30000');
+ assert.equal((await transaction(f.ctx,tx=>tx.get('orders',a.parent_id!))).status,'expired');
+ assert.equal((await transaction(f.ctx,tx=>tx.rows('outbox',"AND data->>'type'='authorization.expired' AND parent_id=$3",[a.id]))).length,1);
+ await assert.rejects(transaction(f.mc,tx=>capture(tx,a.id,{amount:money(1000n)})),{code:'INVALID_STATE'});
+ await maintenance({...f.ctx,role:'system'});assert.equal((await transaction(f.ctx,tx=>tx.get('authorizations',a.id))).released,'3000','a second pass does not release twice');assert.equal((await transaction(f.ctx,reconciliation)).ok,true);
+});

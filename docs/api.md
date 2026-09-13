@@ -26,6 +26,8 @@ curl -X POST http://localhost:4000/v1/oauth/token \
 
 商品明細の合計と注文金額をサーバーで一致検証する。金銭POSTは `Idempotency-Key`（8〜200文字）必須。scopeはworkspace、generation、認証主体、操作、対象、キー。入力を正規化してハッシュし、同じ内容なら保存済み結果、違えば409。キーはworkspace世代の保存期間中保持する。
 
+加盟店APIの非金銭的な変更（Webhook通知先の登録・更新・停止・鍵更新・テスト・再送、購読のpause/resume/cancel、支払リンク無効化、アプリ登録・rotate・revoke、案件回答、店舗プロフィール・戻り先URL）は `Idempotency-Key` を任意で受け付ける。同じキー・同じ入力なら保存済みの結果を返し、異なる入力は409。保存した結果からは `client_secret`／`webhook_secret` を除外するため、再送で秘密が再表示されることはない。
+
 非同期操作は202＋operation_id。返されたcapture/refund/payout ID、または利用者の一覧で状態を照会する。最初に保存した冪等結果は受付時の状態であり、最新状態は照会APIで取得する。タイムアウト時に別キーを発行しない。
 
 利用者は `/v1/me/operations/{id}`、加盟店は `/v1/operations/{id}` で受付済み操作を照会できる。明細のcursorは同じ仕訳に複数勘定行がある場合も欠落しないよう `(created_at, line_id)` を使う。
@@ -46,4 +48,16 @@ curl -X POST http://localhost:4000/v1/oauth/token \
 
 利用者は `/me/*`、支払い承認は `/checkout/*`、運営者は `/admin/*`、デモ制御は `/demo/*`。全て `/v1` 配下。各メソッド・必須入力・scope・schemaはOpenAPIを正とする。
 
-API Playgroundは選択した許可APIに実リクエストを送り、status/latency/request ID/response/curlを表示する。任意URLへのプロキシはない。
+運営者は `/v1/admin/journals`（仕訳の検索・cursor）、`/v1/admin/timeline/{id}`（注文→承認→オーソリ→capture→仕訳明細→Webhook配信→返金）、`/v1/admin/webhook-deliveries/{id}/retry` と `/v1/admin/jobs/{id}/retry`（理由必須・監査ログ）を利用できる。
+
+API Playgroundは選択した許可APIに実リクエストを送り、status/latency/request ID/responseと、POSIX sh用・Windows PowerShell（curl.exe）用のcurl例を表示する。curl例はPOST bodyと `Content-Type` を含み、アクセストークンは環境変数 `EXW_ACCESS_TOKEN`／`$env:EXW_ACCESS_TOKEN` の参照だけで、秘密鍵やトークン自体は埋め込まない。URL・Idempotency-Key・bodyはシェルごとに安全にquoteする。任意URLへのプロキシはない。
+
+```sh
+export EXW_ACCESS_TOKEN="$(curl -sS -X POST http://localhost:4000/v1/oauth/token -H 'Content-Type: application/json' \
+  -d '{"grant_type":"client_credentials","client_id":"YOUR_CLIENT_ID","client_secret":"YOUR_SERVER_SECRET"}' | jq -r .access_token)"
+curl -X POST 'http://localhost:4000/v1/orders' \
+  -H "Authorization: Bearer $EXW_ACCESS_TOKEN" \
+  -H 'Idempotency-Key: SHOP-001:order' \
+  -H 'Content-Type: application/json' \
+  --data-binary '{"merchant_order_id":"SHOP-001","amount":{"currency":"JPY","value":"1000"},"items":[{"name":"Sample","quantity":1,"unit_amount":{"currency":"JPY","value":"1000"}}]}'
+```

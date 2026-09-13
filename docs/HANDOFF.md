@@ -1,5 +1,6 @@
 # ExPress — 別プロジェクト／Astraへの引き継ぎ
 
+**完成作業後の更新（2026-09-13）：この文書は引き継ぎ時点の履歴です。完成版の範囲・実測結果・Git保存状態は [completion-report.md](completion-report.md)、要件ごとの対応は [requirements-matrix.md](requirements-matrix.md)、元担当向けの確認手順は [final-review-guide.md](final-review-guide.md) を参照してください。第8節A／Bの既知の失敗は修正済みです。**
 最終確認：2026-09-13。次の担当エージェントに、このファイル全体を開発引き継ぎプロンプトとして渡してください。
 
 **移管更新：実装・本資料・ユーザー仕様原文をcommit `c47113f`でGitHub mainへpushし、別フォルダーへのclone検証まで完了しました。[検証記録](TRANSFER-VERIFIED.md)を参照。取得は[CLOUD-START.md](CLOUD-START.md)から開始してください。クラウドでは元Windowsパスへのアクセスは不要です。[SPECIFICATION.md](SPECIFICATION.md)が未着だった原仕様の全文です。以下の「未コミット」は初回引き継ぎ時点の履歴です。**

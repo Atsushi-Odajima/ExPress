@@ -34,6 +34,8 @@ sequenceDiagram
 
 返金はcaptureごとに `refunded + reserved <= amount`。処理中の返金も予約額へ含める。返金に使った未精算ロットは精算ジョブが再び利用可能へ移さない。失敗なら同じ原資に戻す。
 
+運営者の `/v1/admin/timeline/{id}` は、これらの状態遷移を注文単位でチェックアウト・オーソリ・capture・返金・provider attempt・outboxイベント・Webhook配信・仕訳明細・精算ロット・案件・請求周期として並べる。
+
 workspace/generationを確認する行ロックがcapture/void/expireとresetの競合を直列化する。プロバイダー成功後、業務反映前に停止してもprovider結果照会で同じintentを回復する。新しい冪等キーでも業務側上限を超えられない。
 
 月次請求はUTC。初回同意日のanchor dayを保持し、月末を超えた月は末日に丸める。周期ごとに一意制約を持ち、1日後・3日後に同じ周期を再試行。最大3回失敗で停止。同意撤回後は新しい請求を作らず、すでに外部へ送ったintentは結果照会を完了させる。

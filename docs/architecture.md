@@ -21,7 +21,9 @@ APIはworkspaceを認証済みセッションまたはアクセストークン�
 
 外部プロバイダー呼出し中にトランザクションを開かない。先にintentとjobをコミットし、独立workerが外部結果を取得して新しいトランザクションで反映する。模擬プロバイダーの結果も別コミットとして保存し、業務側停止からの回復を検証する。
 
-ECは別DBと権限を使用する。Composeのinit SQLは `exw_store` をNOSUPERUSERにし、exw DBへのCONNECTを許可しない。ECコードはExPressテーブルを参照せず、サーバーSDK・公開API・署名Webhookだけを使う。
+ECは別DBと権限を使用する。Composeのinit SQLは `exw_store` をNOSUPERUSERにし、exw DBへのCONNECTを許可しない（Compose起動とrole分離はLinux環境でPostgreSQL 18.6により確認済み、`verify:clean` でも42501を検証）。ECコードはExPressテーブルを参照せず、サーバーSDK・公開API・署名Webhookだけを使う。
+
+運営者は `/v1/admin/timeline/{id}` で注文→承認→オーソリ→capture→仕訳明細→Webhook配信→返金を追跡し、`/v1/admin/journals` で仕訳を検索し、失敗ジョブ・dead-letter配信を理由付きで再試行できる。
 
 ## 配備案
 
