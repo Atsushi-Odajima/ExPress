@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import pg from 'pg';
+import {migrate} from '../packages/database/src/migrate.ts';
+import {pool,transaction} from '../packages/database/src/index.ts';
+import {createWorkspace} from '../apps/api/src/seed.ts';
+import {sessionContext} from '../apps/api/src/security.ts';
+import {credentialCreate} from '../apps/api/src/services.ts';
+import {buildApp} from '../apps/api/src/app.ts';
+import {balances,reconciliation} from '../packages/database/src/ledger.ts';
+import {ExPressClient} from '../packages/sdk-server/src/index.ts';
+import {config} from '../packages/database/src/config.ts';
+import {scopes,money} from '../packages/domain/src/index.ts';
+await migrate();await migrate();const seed=await createWorkspace(true),{ctx,csrf}=await sessionContext(seed.token,'fresh-start');
+assert.equal((await transaction(ctx,tx=>balances(tx,ctx.user!))).available,'30000');
+const merchant=(await transaction(ctx,tx=>tx.rows('merchants')))[0],mc={...ctx,merchant:merchant.id,role:'owner',scopes:[...scopes]};
+const credentials=await transaction(mc,tx=>credentialCreate(tx,{name:'Clean SDK verification',scopes:[...scopes]}));
+const app=await buildApp();try{const address=await app.listen({port:0,host:'127.0.0.1'}),sdk=new ExPressClient({baseUrl:address,clientId:credentials.data.client_id,clientSecret:credentials.client_secret});
+const order=await sdk.createOrder({merchant_order_id:randomUUID(),amount:money(1000n),items:[{name:'Fresh DB item',quantity:1,unit_amount:money(1000n)}]},randomUUID());
+const checkout=await sdk.createCheckout({order_id:order.id,return_url:config.storeUrl+'/return',cancel_url:config.storeUrl+'/cancel'},randomUUID());
+const headers={cookie:'exw_session='+seed.token,origin:config.portalUrl,'x-csrf-token':csrf};await app.inject({url:'/v1/checkout/'+checkout.id,headers});
+const approval=await app.inject({url:'/v1/checkout/'+checkout.id+'/approve',method:'POST',headers:{...headers,'idempotency-key':randomUUID()},payload:{source:'wallet',challenge:true}});assert.equal(approval.statusCode,200);
+const capture=await sdk.capture(approval.json().id,{amount:money(1000n),final_capture:true},randomUUID());await sdk.refund(capture.id,{amount:money(100n),reason:'Fresh database validation'},randomUUID());
+assert.equal((await sdk.getOrder(order.id)).refunded,'100');assert.equal((await transaction(ctx,reconciliation)).ok,true);
+const deniedUrl=new URL(config.storeDatabaseUrl);deniedUrl.pathname=new URL(config.databaseUrl).pathname;const denied=new pg.Client({connectionString:deniedUrl.href});await assert.rejects(denied.connect(),{code:'42501'});await denied.end();
+}finally{await app.close();await pool.end();}

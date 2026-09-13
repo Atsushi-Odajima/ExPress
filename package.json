@@ -1,0 +1,57 @@
+{
+  "name": "express-wallet",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "start": "tsx scripts/start.ts",
+    "db:local": "tsx scripts/local-db.ts",
+    "db:migrate": "tsx packages/database/src/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "verify:clean": "tsx scripts/verify-clean.ts",
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build": "tsx scripts/build.ts",
+    "start:api": "node dist/apps/api/src/index.js",
+    "start:worker": "node dist/apps/worker/src/index.js",
+    "start:store": "node dist/apps/demo-store/src/index.js",
+    "openapi": "tsx scripts/openapi.ts",
+    "check": "pnpm typecheck && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.2.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/swagger": "^9.6.0",
+    "@fastify/swagger-ui": "^5.2.3",
+    "@tailwindcss/postcss": "^4.2.1",
+    "dotenv": "^17.2.3",
+    "fastify": "5.12.3",
+    "lucide-react": "^0.577.0",
+    "next": "16.3.4",
+    "pg": "8.23.0",
+    "qrcode": "1.5.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwindcss": "^4.2.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^24.10.0",
+    "@types/pg": "^8.16.0",
+    "@types/qrcode": "1.5.6",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "embedded-postgres": "18.4.0-beta.17",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.3"
+  }
+}

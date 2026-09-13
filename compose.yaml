@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:18.6
+    environment:
+      POSTGRES_USER: exw
+      POSTGRES_PASSWORD: exw_local_only
+      POSTGRES_DB: exw
+    ports: ["127.0.0.1:54329:5432"]
+    volumes:
+      - exw_pg:/var/lib/postgresql
+      - ./packages/database/init-store.sql:/docker-entrypoint-initdb.d/20-store.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U exw -d exw"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  exw_pg:

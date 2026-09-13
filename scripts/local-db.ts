@@ -1,0 +1,14 @@
+import EmbeddedPostgres from 'embedded-postgres';
+import {existsSync,readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {root} from '../packages/database/src/config.ts';
+const dir=resolve(root,'.local/postgres');
+const pg=new EmbeddedPostgres({databaseDir:dir,user:'exw',password:'exw_local_only',port:54329,persistent:true,authMethod:'scram-sha-256',initdbFlags:['--locale=C','--encoding=UTF8'],postgresFlags:['-h','127.0.0.1'],onLog:()=>{},onError:m=>{if(String(m).includes('FATAL'))console.error(m);}});
+if(!existsSync(resolve(dir,'PG_VERSION'))) await pg.initialise();
+await pg.start();const db=pg.getPgClient();await db.connect();
+if(!(await db.query("SELECT 1 FROM pg_database WHERE datname='exw'")).rowCount)await db.query('CREATE DATABASE exw OWNER exw');
+if(!(await db.query("SELECT 1 FROM pg_roles WHERE rolname='exw_store'")).rowCount) await db.query("CREATE ROLE exw_store LOGIN PASSWORD 'exw_store_local_only' NOSUPERUSER NOCREATEDB NOCREATEROLE");
+if(!(await db.query("SELECT 1 FROM pg_database WHERE datname='exw_store'")).rowCount)await db.query('CREATE DATABASE exw_store OWNER exw_store');
+await db.query('REVOKE CONNECT ON DATABASE exw FROM PUBLIC');await db.query('GRANT CONNECT ON DATABASE exw TO exw');await db.end();
+console.log('ExPress PostgreSQL ready at 127.0.0.1:54329 (Ctrl+C to stop)');
+let stopping=false;async function stop(){if(stopping)return;stopping=true;await pg.stop();process.exit(0);}process.on('SIGINT',stop);process.on('SIGTERM',stop);setInterval(()=>{},60000);

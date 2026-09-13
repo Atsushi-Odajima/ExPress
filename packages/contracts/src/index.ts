@@ -1,0 +1,5 @@
+export const moneySchema={type:'object',additionalProperties:false,required:['currency','value'],properties:{currency:{type:'string',const:'JPY'},value:{type:'string',pattern:'^[1-9][0-9]{0,12}$',examples:['12000']}}};
+export const stringSchema={type:'string',maxLength:2000};
+export const bodySchema=(properties:Record<string,unknown>,required:string[]=[])=>({type:'object',additionalProperties:false,properties,required});
+export const errorSchema={type:'object',properties:{error:{type:'object',required:['code','message','request_id','details'],properties:{code:{type:'string'},message:{type:'string'},request_id:{type:'string'},details:{type:'array',items:{type:'object'}}}}}};
+export const orderSchema=bodySchema({merchant_order_id:{type:'string',minLength:1,maxLength:128},amount:moneySchema,description:stringSchema,items:{type:'array',minItems:1,maxItems:100,items:bodySchema({name:{type:'string',minLength:1,maxLength:200},quantity:{type:'integer',minimum:1,maximum:100},unit_amount:moneySchema},['name','quantity','unit_amount'])},metadata:{type:'object',additionalProperties:{type:'string'}}},['merchant_order_id','amount','items']);
