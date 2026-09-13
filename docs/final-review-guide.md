@@ -4,7 +4,7 @@
 
 ## 1. 完成品の所在と起動
 
-- GitHub `https://github.com/Atsushi-Odajima/ExPress`、ブランチ `claude/express-completion-delivery-e92pt1`（commit は completion-report を参照）。`main` は移管時点（`430d918`）のままで、完成版は上記ブランチにあります。
+- GitHub `https://github.com/Atsushi-Odajima/ExPress`、ブランチ `claude/express-completion-delivery-e92pt1`（実装コミット `1f1d5746b173`、詳細は completion-report）。`main` は移管時点（`430d918`）のままで、完成版は上記ブランチにあります。
 - 起動は README の手順（`cp .env.example .env` → `pnpm install --frozen-lockfile` → `docker compose up -d` → `pnpm run db:migrate` → `pnpm run db:seed` → `pnpm run dev`）。Linux での実測手順は [CLOUD-START.md](CLOUD-START.md) 第7節。
 - URL：Portal http://localhost:3000、NORTHSTAR EC http://localhost:3001、API http://localhost:4000（Swagger UI は `/docs`）。
 
