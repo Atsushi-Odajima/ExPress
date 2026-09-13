@@ -47,6 +47,6 @@
 4. このPCのURL：Portal http://localhost:3100、EC http://localhost:3001、API http://localhost:4000。標準3000は他アプリ使用中。.env/.localはGit対象外。
 5. 残存プロセスは.local/dev-processes.jsonのPIDと実プロセスを照合し、ExPressのものだけを停止。他のNodeアプリを停止しない。
 
-初回引き継ぎではコードが未コミット・未pushだったためクラウドに届かなかった。ユーザーの追加依頼により、実装・仕様原文・引き継ぎ資料をGitへ移管する。取得は[CLOUD-START.md](CLOUD-START.md)、仕様は[SPECIFICATION.md](SPECIFICATION.md)、元PCの試験要約は[verification-record.md](verification-record.md)を参照。Windowsパスや元PCの秘密鍵は不要。アプリ公開・実課金・外部メール送信・有料契約は実施しない。
+初回引き継ぎではコードが未コミット・未pushだったためクラウドに届かなかった。ユーザーの追加依頼により、実装・仕様原文・引き継ぎ資料をcommit `c47113f`でGitHub mainへpushし、別cloneで107ファイルと原仕様の一致を検証済み。[移管記録](TRANSFER-VERIFIED.md)、[取得手順](CLOUD-START.md)、[仕様原文](SPECIFICATION.md)、[元PCの試験要約](verification-record.md)を参照。Windowsパスや元PCの秘密鍵は不要。アプリ公開・実課金・外部メール送信・有料契約は実施しない。
 
 移管時の変更：Linux/macOSでPlaywrightの既定を管理Chromiumにし、PLAYWRIGHT_CHANNELで変更可能にした。Windowsの既定Edgeは維持。Linuxブラウザ実行は未検証。既知のアプリ不具合2件とcurl表示の修正は次担当に残っている。

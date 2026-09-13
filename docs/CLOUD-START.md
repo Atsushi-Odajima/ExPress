@@ -65,6 +65,8 @@ Dockerを利用しない場合、利用可能なPostgreSQLサービスに専用`
 
 `pnpm run db:local`はembedded-postgresで実PostgreSQLを起動する代替です。前担当の実測はWindowsのみ。LinuxではCPU／配布バイナリ／OS依存ライブラリを確認してください。PostgreSQL initdbはroot実行不可のため、rootしかない環境では非rootの実行基盤か既存DBサービスが必要です。この事情を「実装ソースがない」と取り違えず、DB環境の課題として切り分けます。
 
+embedded-postgresの同梱READMEではpostinstallによるsymlink作成が必要です。Linuxでpnpmがネイティブ配布パッケージのbuildを停止した場合は、実際のCPUに対応する`@embedded-postgres/linux-x64`等とその固定バージョンを確認し、`pnpm-workspace.yaml`のallowBuildsを必要なパッケージだけ追加してください。現在の明示設定は検証済みWindows用で、Linuxのpostinstallは未検証です。
+
 標準URLはPortal `http://localhost:3000`、EC `http://localhost:3001`、API `http://localhost:4000`。3000が使用中なら`PORTAL_PORT`と`PORTAL_URL`を一緒に変更。origin末尾にスラッシュを付けません。
 
 API・EC・Portalはloopback待受です。クラウド内Playwrightは同じ環境のlocalhostへ接続します。人がブラウザで触る場合はその環境のプレビュー／ポート転送を使います。別hostnameの公開URLへ変更する場合はCookie、CSRF、CORS、URL許可設定との整合が必要で、localhostのCookie設定のまま動くとは想定しないでください。公開配備は今回の依頼範囲外です。

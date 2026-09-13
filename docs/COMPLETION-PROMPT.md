@@ -9,7 +9,7 @@
 - GitHub： https://github.com/Atsushi-Odajima/ExPress
 - 現ローカル実装：`C:\Users\kuroa\Documents\Codex\2026-09-10\express-codex-0-ec-express-db`
 - 引き継ぎ時のmain HEADは`8929459 Initial commit`。
-- **初回引き継ぎでは実装が未pushでしたが、今回ソースと資料をGit経由で共有する移管を行います。`docs/CLOUD-START.md`に従い最新mainをclone/pullし、実装一式を取得してください。** 上記Windowsパスは元PCの履歴です。クラウドからアクセスする必要はありません。
+- **初回引き継ぎでは実装が未pushでしたが、ソースcommit `c47113f`をGitHub mainへpushし別clone検証を完了しました。`docs/CLOUD-START.md`に従い最新mainをclone/pullしてください。** 上記Windowsパスは元PCの履歴です。クラウドからアクセスする必要はありません。検証は`docs/TRANSFER-VERIFIED.md`に記録しています。
 - 最初に`docs/HANDOFF.md`と`docs/implementation-status.md`を読み、実装・残件・環境を把握してください。git statusと実ファイルで引き継げたことを確認します。
 - 元の「ExPress — Codex向け開発指示書」は`docs/SPECIFICATION.md`へ原文のまま保存しています。これを要件の正本としてください。HANDOFFは前担当の状態説明であり、仕様縮小や独立した品質保証ではありません。
 - 実装ファイルが届いていない場合は、初期リポジトリから別物を作り直さず、欠けているソースの所在を明確にしてください。
