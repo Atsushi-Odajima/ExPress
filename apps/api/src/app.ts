@@ -23,7 +23,7 @@ const moneyBody=B({amount:M},['amount']);
 const empty=B({});
 /** Stored replay responses never repeat one-time secrets. */
 const withoutSecrets=(r:any)=>r&&typeof r==='object'&&!Array.isArray(r)?Object.fromEntries(Object.entries(r).filter(([k])=>!['client_secret','webhook_secret'].includes(k))):r;
-const cookieOptions={httpOnly:true,secure:!config.local,sameSite:'lax' as const,path:'/',maxAge:86400};
+const cookieOptions={httpOnly:true,secure:!config.local||config.cookieSameSite==='none',sameSite:config.cookieSameSite,path:'/',maxAge:86400};
 function sendSession(reply:any,s:any){reply.setCookie('exw_session',s.token,cookieOptions);if(s.owner_token)reply.setCookie('exw_demo',s.owner_token,{...cookieOptions,maxAge:7*86400});const {token,owner_token,...safe}=s;return safe;}
 async function paged(tx:Tx,table:Table,q:any,scope:'merchant'|'user'|'all'='merchant'){
  let extra='',values:unknown[]=[];const add=(sql:string,v:unknown)=>{values.push(v);extra+=' AND '+sql.replace('?',`$${values.length+2}`);};
@@ -155,8 +155,8 @@ export async function buildApp() {
   const {ctx,csrf}=await sessionContext(req.cookies.exw_session??'',req.id);ensure(req.headers.origin===config.portalUrl&&req.headers['x-csrf-token']===csrf,'FORBIDDEN',undefined,403);ensure(ctx.merchant&&['owner','developer'].includes(ctx.role),'FORBIDDEN',undefined,403);req.ctx=ctx;await limitActor(req,reply);
   const scope=req.body.path==='/v1/orders'?(req.body.method==='POST'?'orders:write':'orders:read'):req.body.path==='/v1/balances'?'balances:read':'webhooks:manage';ensure(ctx.scopes.includes(scope)&&!(req.body.method==='POST'&&req.body.path!=='/v1/orders'),'FORBIDDEN',undefined,403);
   const credentials=await transaction(ctx,async tx=>{let c=(await tx.rows('credentials',"AND merchant_id=$3 AND data->>'internal_playground'='true' AND owner_id=$4 AND status='active'",[ctx.merchant,ctx.actor]))[0];if(!c){const secret=randomToken();c=await tx.create('credentials',{merchant_id:ctx.merchant,owner_id:ctx.actor,data:{name:'API Playground',client_id:'exw_'+randomUUID(),secret_hash:hash(secret),secret_encrypted:encrypt(secret),internal_playground:true,scopes:ctx.scopes}});}return {client_id:c.data.client_id,client_secret:decrypt(c.data.secret_encrypted)};});
-  const start=performance.now();const tr=await fetch(config.apiUrl+'/v1/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'client_credentials',...credentials,scope}),signal:AbortSignal.timeout(5000)});const token=await tr.json();ensure(tr.ok,'UNAUTHENTICATED',undefined,401);
-  const response=await fetch(config.apiUrl+req.body.path,{method:req.body.method,headers:{Authorization:'Bearer '+token.access_token,'Content-Type':'application/json','Idempotency-Key':req.body.idempotency_key},body:req.body.method==='POST'?JSON.stringify(req.body.body):undefined,signal:AbortSignal.timeout(5000)});
+  const start=performance.now();const tr=await fetch(config.apiInternalUrl+'/v1/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'client_credentials',...credentials,scope}),signal:AbortSignal.timeout(5000)});const token=await tr.json();ensure(tr.ok,'UNAUTHENTICATED',undefined,401);
+  const response=await fetch(config.apiInternalUrl+req.body.path,{method:req.body.method,headers:{Authorization:'Bearer '+token.access_token,'Content-Type':'application/json','Idempotency-Key':req.body.idempotency_key},body:req.body.method==='POST'?JSON.stringify(req.body.body):undefined,signal:AbortSignal.timeout(5000)});
   const examples=curlExamples({method:req.body.method,url:config.apiUrl+req.body.path,idempotencyKey:req.body.idempotency_key,body:req.body.body});
   return {status:response.status,latency_ms:Math.round(performance.now()-start),request_id:response.headers.get('x-request-id'),response:await response.json(),curl:examples.posix,curl_powershell:examples.powershell};
  });

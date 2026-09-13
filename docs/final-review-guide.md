@@ -66,4 +66,6 @@
 
 ## 7. 範囲外・未実施（正直な区分）
 
+公開配備そのもの（Cloudflare クイックトンネルの実接続、Render／Railway／Fly.io／Supabase への配備）はこの環境の通信制限と資格情報の不在により未実施。代わりに同一オリジン `/api` 構成の E2E、`Dockerfile` のビルドと起動スモーク、`scripts/tunnel.ts` のスタブ検証を行った。手順と検証範囲は [deploy.md](deploy.md)、実測は [completion-report.md](completion-report.md) 第10節。
+
 実預金・送金・カード・KYC・メール送信、公開配備、実 iOS Safari／Edge 以外の実ブラウザ（この環境は Playwright 管理 Chromium 153）、包括的アクセシビリティ監査、負荷性能、外部侵入試験。PowerShell の curl 例は quote 規則の静的検証のみ（POSIX 例は実行検証済み）。詳細は completion-report の「未実施検証・制約」。

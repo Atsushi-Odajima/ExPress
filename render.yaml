@@ -1,0 +1,108 @@
+# Render Blueprint for ExPress (free-tier layout). Apply with "New → Blueprint" in the Render dashboard.
+#
+# Layout: one free PostgreSQL for the ledger (exw), three web services built from the same Dockerfile.
+# The worker loop runs inside the API process (WORKER_IN_API=true) because Render's free tier has no background workers;
+# on a paid plan you can instead set WORKER_IN_API=false on exw-api and add the commented "exw-worker" service below.
+# The sample store needs its own database and role: use a Supabase free project (or any second PostgreSQL) and paste its
+# connection string into STORE_DATABASE_URL, so that the store role can never reach the ledger database.
+#
+# First deploy: leave the URL values empty except the placeholders, read the hostnames Render assigned, then set
+#   PORTAL_URL=https://<exw-portal host>      API_URL=https://<exw-portal host>/api      STORE_URL=https://<exw-store host>
+#   API_INTERNAL_URL=http://exw-api:10000      WEBHOOK_ALLOWLIST=https://<exw-store host>/webhooks/express-wallet
+# on every service and deploy again: the Portal embeds PORTAL_URL / API_URL / STORE_URL / API_INTERNAL_URL at build time
+# (Render passes environment variables to Docker builds as build args, which the Dockerfile declares).
+# Free instances sleep after inactivity and free databases have expiry/pausing rules: check Render's and Supabase's current terms.
+databases:
+  - name: exw-ledger
+    databaseName: exw
+    user: exw
+    plan: free
+
+services:
+  - type: web
+    name: exw-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    # migrations run before the API starts; the store creates its own tables
+    dockerCommand: sh -c "node dist/packages/database/src/migrate.js && node dist/apps/api/src/index.js"
+    healthCheckPath: /v1/health
+    envVars:
+      - key: DEMO_MODE
+        value: public
+      - key: LISTEN_HOST
+        value: 0.0.0.0
+      - key: WORKER_IN_API
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase: {name: exw-ledger, property: connectionString}
+      - key: STORE_DATABASE_URL # second PostgreSQL (e.g. Supabase project) with its own role; must differ from DATABASE_URL
+        sync: false
+      - key: ENCRYPTION_KEY # 32 bytes as 64 hex characters, e.g. openssl rand -hex 32
+        sync: false
+      - key: PORTAL_URL # https://<exw-portal host>
+        sync: false
+      - key: API_URL # https://<exw-portal host>/api  (same-origin via the Portal's /api proxy)
+        sync: false
+      - key: STORE_URL # https://<exw-store host>
+        sync: false
+      - key: API_INTERNAL_URL # http://exw-api:10000  (Render private network: service name + its port)
+        sync: false
+      - key: WEBHOOK_ALLOWLIST # https://<exw-store host>/webhooks/express-wallet
+        sync: false
+      - key: SETTLEMENT_DELAY_SECONDS
+        value: "60"
+
+  - type: web
+    name: exw-store
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerCommand: node dist/apps/demo-store/src/index.js
+    healthCheckPath: /
+    envVars:
+      - key: DEMO_MODE
+        value: public
+      - key: LISTEN_HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL # config validation only; the store never opens the ledger database
+        fromDatabase: {name: exw-ledger, property: connectionString}
+      - key: STORE_DATABASE_URL
+        sync: false
+      - key: ENCRYPTION_KEY # the store encrypts its own credential copy; any 64-hex value, may differ from the API's
+        sync: false
+      - key: PORTAL_URL
+        sync: false
+      - key: API_URL
+        sync: false
+      - key: STORE_URL
+        sync: false
+      - key: API_INTERNAL_URL
+        sync: false
+
+  - type: web
+    name: exw-portal
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerCommand: node node_modules/next/dist/bin/next start apps/portal --hostname 0.0.0.0 --port $PORT
+    healthCheckPath: /wallet
+    envVars:
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: PORTAL_URL # build-time: embedded into the Portal
+        sync: false
+      - key: API_URL # https://<exw-portal host>/api
+        sync: false
+      - key: STORE_URL
+        sync: false
+      - key: API_INTERNAL_URL # http://exw-api:10000, baked into the /api and /docs rewrites at build time
+        sync: false
+
+  # Paid plans: separate worker process (then set WORKER_IN_API=false on exw-api).
+  # - type: worker
+  #   name: exw-worker
+  #   runtime: docker
+  #   dockerfilePath: ./Dockerfile
+  #   dockerCommand: node dist/apps/worker/src/index.js
+  #   envVars: same DEMO_MODE, DATABASE_URL, STORE_DATABASE_URL, ENCRYPTION_KEY (must equal the API's), PORTAL_URL, API_URL, STORE_URL, API_INTERNAL_URL, WEBHOOK_ALLOWLIST

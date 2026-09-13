@@ -1,5 +1,5 @@
 import {spawn} from 'node:child_process';import {existsSync,writeFileSync,mkdirSync} from 'node:fs';import {config,root} from '../packages/database/src/config.ts';
 if(!existsSync(root+'/apps/portal/.next/BUILD_ID')||!existsSync(root+'/dist/apps/api/src/index.js'))throw Error('Run pnpm build before pnpm start');
-const commands=[['dist/apps/api/src/index.js'],['dist/apps/worker/src/index.js'],['dist/apps/demo-store/src/index.js'],['node_modules/next/dist/bin/next','start','apps/portal','--hostname','127.0.0.1','--port',String(config.portalPort)]];
+const commands=[['dist/apps/api/src/index.js'],['dist/apps/worker/src/index.js'],['dist/apps/demo-store/src/index.js'],['node_modules/next/dist/bin/next','start','apps/portal','--hostname',config.listenHost,'--port',String(config.portalPort)]];
 const children=commands.map(args=>spawn(process.execPath,args,{cwd:root,stdio:'inherit',windowsHide:true}));mkdirSync(root+'/.local',{recursive:true});writeFileSync(root+'/.local/dev-processes.json',JSON.stringify({root,parent:process.pid,children:children.map(p=>p.pid),mode:'production'}));
 let stopping=false;function stop(){if(stopping)return;stopping=true;for(const child of children)child.kill();}process.on('SIGINT',stop);process.on('SIGTERM',stop);for(const child of children)child.on('exit',code=>{if(!stopping){stop();process.exitCode=code??1;}});

@@ -55,7 +55,7 @@ Docker を使わない場合の既存 PostgreSQL の設定手順は [docs/CLOUD-
 |OpenAPI|http://localhost:4000/v1/openapi.json|`packages/contracts/openapi/exw-v1.json` と同じ内容|
 |PostgreSQL|127.0.0.1:54329|`exw`（台帳）と `exw_store`（EC）の別DB・別role|
 
-ポートを変えるときは `PORTAL_PORT` と `PORTAL_URL` など対応するURLも変更してください。`API_URL` / `PORTAL_URL` / `STORE_URL` は末尾スラッシュなしのoriginです。
+ポートを変えるときは `PORTAL_PORT` と `PORTAL_URL` など対応するURLも変更してください。`PORTAL_URL` / `STORE_URL` は末尾スラッシュなしのoriginです。`API_URL` は origin か、Portal の origin＋`/api`（Portal が `/api/*` と `/docs` を API へ同一オリジンで転送する公開向け構成）を指定できます。
 
 `pnpm dev` は API・worker・EC・Next を別プロセスで起動します。本番ビルドは `pnpm run build` → `pnpm run start`（ビルド時にルートの `.env` を読み、PortalへAPI/ECの公開originを埋め込むので、URL変更後は再ビルド）。API・EC・Portal は loopback に待ち受け、公開構成では同一ホストの TLS プロキシを通します。`.local` はローカルの暗号鍵・ログ・DB（db:local時）を含み、Git対象外です。
 
@@ -84,11 +84,11 @@ DBテストは隔離workspaceを作成し、本物のPostgreSQLで100並列captu
 ## 構成と資料
 
 - [要件対応表](docs/requirements-matrix.md)、[完成報告](docs/completion-report.md)、[元担当向け確認ガイド](docs/final-review-guide.md)
-- [構成・信頼境界・配備](docs/architecture.md)、[セキュリティ](docs/security.md)
+- [構成・信頼境界・配備](docs/architecture.md)、[セキュリティ](docs/security.md)、[公開とスマートフォン確認の手順](docs/deploy.md)
 - [決済ライフサイクル](docs/payment-lifecycle.md)、[台帳](docs/ledger.md)
 - [API](docs/api.md)、[エンドポイント一覧](docs/api-endpoints.md)、[Webhook](docs/webhooks.md)、[SDK導入](docs/integration-guide.md)
 - [16シナリオ](docs/demo-scenarios.md)、[ポートフォリオ・デモ手順](docs/portfolio.md)
 - [設計判断](docs/decisions.md)、[実装状況](docs/implementation-status.md)
 - 引き継ぎ履歴：[CLOUD-START](docs/CLOUD-START.md)、[HANDOFF](docs/HANDOFF.md)、[COMPLETION-PROMPT](docs/COMPLETION-PROMPT.md)、[TRANSFER-VERIFIED](docs/TRANSFER-VERIFIED.md)、[verification-record](docs/verification-record.md)
 
-公開配備・有料契約・実課金は実施していません。静的ホスティングだけでは動きません。Next・API・永続DB・独立worker・ECサーバーが必要です。公開前の条件は [docs/security.md](docs/security.md) と [docs/architecture.md](docs/architecture.md) を参照してください。
+公開配備・有料契約・実課金は実施していません。静的ホスティングだけでは動きません。Next・API・永続DB・worker・ECサーバーが必要です。スマートフォンから触るための手順（PC＋Cloudflare クイックトンネル `pnpm exec tsx scripts/tunnel.ts`、または `Dockerfile`／`render.yaml` による常時配備）は [docs/deploy.md](docs/deploy.md)、公開前の条件は [docs/security.md](docs/security.md) と [docs/architecture.md](docs/architecture.md) を参照してください。

@@ -33,6 +33,8 @@ Portalは必要scopeを満たさないrole（例：read_onlyの出金画面・�
 
 ## 公開前の確認
 
+公開ホスト名（`trycloudflare.com`、`onrender.com`、`fly.dev` など）は Public Suffix List に載り、サブドメイン同士は別サイト扱いになる。`SameSite=Lax` の Cookie は cross-site の `fetch` に送られず、Safari はサードパーティ Cookie を遮断するため、Portal と API は同一オリジン（Portal の `/api` 転送）に置き、EC への引き渡しはトップレベル遷移 `GET /connect?code=` で行う。`COOKIE_SAMESITE=none` は HTTPS の分離配置だけの選択肢で、Safari では動作しない。転送を挟んでも CSRF 検査は `Origin` の完全一致（`PORTAL_URL`）のまま。手順は [deploy.md](deploy.md)。
+
 公開・実資金運用は本作業の対象外。公開デモを配備する前に、HTTPS・公開origin、ランダムな環境鍵、管理者固定Webhook許可リスト、ネットワークACL、DB最小権限、保存期間と削除手順、監視、依存監査を確認する。localhost固定パスワードは公開環境で使用しない。複数APIプロセスでの共有レート制限、包括的なアクセシビリティ・セキュリティ試験は実装状況に残す。
 
 入口にはIP単位の3,000/分、ログイン等には20/分、認証後はworkspace/generation/主体単位の300/分の制限を置く。認証前の任意Cookie文字列をレート制限の主体として信用しない。429とRetry-Afterを検証する自動テストがある。

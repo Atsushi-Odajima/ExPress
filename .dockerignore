@@ -1,0 +1,14 @@
+node_modules
+.pnpm-store
+.local
+dist
+apps/portal/.next
+test-results
+playwright-report
+.git
+.env
+.env.*
+!.env.example
+docs
+tests
+*.log

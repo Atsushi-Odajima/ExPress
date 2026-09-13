@@ -27,6 +27,8 @@ ECは別DBと権限を使用する。Composeのinit SQLは `exw_store` をNOSUPE
 
 ## 配備案
 
+公開向けの具体的な手順・ファイル（`scripts/tunnel.ts`、`Dockerfile`、`render.yaml`）は [deploy.md](deploy.md) にある。公開ホスト名の多くは Public Suffix List に載るため、Portal は `/api/*` と `/docs` を `API_INTERNAL_URL` へ同一オリジンで転送し（`API_URL=<PORTAL_URL>/api`）、ECへの引き渡しはトップレベル遷移 `GET /connect?code=`（一度限り・5分失効）で行う。これで Cookie は常にファーストパーティで、公開ホスト名は Portal と EC の2つで足りる。`WORKER_IN_API=true` は無料枠に常駐 worker がないホスト向けの選択肢で、既定は独立 worker プロセス。
+
 TLS終端リバースプロキシの背後に、Portal、API、ECを別サービスとして置く。PostgreSQLは外部非公開ネットワークへ配置し、workerは常駐プロセスか永続ジョブ基盤で実行する。workerのプロセス監視・再起動・ログ保持・DBバックアップが必要。Nextだけの静的配信では動作しない。
 
 公開前には独立した秘密管理、DB最小権限ロール、TLS、秘密鍵更新の運用、workspace保存期間、レート制限共有ストア、負荷試験を確認する。現リポジトリはローカルデモの実装で、実資金を運用する決済事業者の基盤として提供するものではない。

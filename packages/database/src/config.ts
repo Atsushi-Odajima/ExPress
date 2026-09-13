@@ -16,12 +16,24 @@ export const config = {
   databaseUrl:process.env.DATABASE_URL??'postgresql://exw:exw_local_only@127.0.0.1:54329/exw',
   storeDatabaseUrl:process.env.STORE_DATABASE_URL??'postgresql://exw_store:exw_store_local_only@127.0.0.1:54329/exw_store',
   apiUrl:process.env.API_URL??'http://localhost:4000', portalUrl:process.env.PORTAL_URL??'http://localhost:3000', storeUrl:process.env.STORE_URL??'http://localhost:3001',
-  apiPort:Number(process.env.API_PORT??4000), storePort:Number(process.env.STORE_PORT??3001), portalPort:Number(process.env.PORTAL_PORT??3000),
+  /** Server-to-server address of the API (Playground, sample store). Defaults to the local listener; set it when API_URL is a public or proxied URL. */
+  apiInternalUrl:process.env.API_INTERNAL_URL??`http://127.0.0.1:${Number(process.env.API_PORT??process.env.PORT??4000)}`,
+  /** PORT is honoured so that container hosts that inject one port per service work without extra settings. */
+  apiPort:Number(process.env.API_PORT??process.env.PORT??4000), storePort:Number(process.env.STORE_PORT??process.env.PORT??3001), portalPort:Number(process.env.PORTAL_PORT??process.env.PORT??3000),
+  /** Loopback by default; containers must bind 0.0.0.0. */
+  listenHost:process.env.LISTEN_HOST??'127.0.0.1',
+  workerInApi:process.env.WORKER_IN_API==='true',
+  /** lax when Portal, API and store share one site (localhost ports, one custom domain, or the /api proxy); none only for HTTPS split-site setups. */
+  cookieSameSite:(process.env.COOKIE_SAMESITE??'lax') as 'lax'|'none',
   local, key:encryptionKey(), singleWorkspace:process.env.SINGLE_WORKSPACE==='true',
   webhookAllowlist:(process.env.WEBHOOK_ALLOWLIST??'http://localhost:3001/webhooks/express-wallet').split(','),
   settlementSeconds:Number(process.env.SETTLEMENT_DELAY_SECONDS??60)
 };
 for(const port of [config.apiPort,config.storePort,config.portalPort])if(!Number.isInteger(port)||port<1||port>65535)throw Error('Invalid service port');
-for(const value of [config.apiUrl,config.portalUrl,config.storeUrl]){const url=new URL(value);if(url.origin!==value||!['http:','https:'].includes(url.protocol))throw Error('Service URLs must be origins without a trailing slash');if(!local&&url.protocol!=='https:')throw Error('Public demo requires HTTPS service origins');}
+for(const value of [config.portalUrl,config.storeUrl]){const url=new URL(value);if(url.origin!==value||!['http:','https:'].includes(url.protocol))throw Error('PORTAL_URL and STORE_URL must be origins without a trailing slash');if(!local&&url.protocol!=='https:')throw Error('Public demo requires HTTPS service origins');}
+{const url=new URL(config.apiUrl);if(url.origin+url.pathname.replace(/\/$/,'')!==config.apiUrl||url.search||url.hash||!['http:','https:'].includes(url.protocol))throw Error('API_URL must be an origin, optionally with a path prefix such as https://portal.example/api, without a trailing slash');if(!local&&url.protocol!=='https:')throw Error('Public demo requires an HTTPS API URL');}
+for(const value of [config.apiInternalUrl]){const url=new URL(value);if(url.origin+url.pathname.replace(/\/$/,'')!==value||!['http:','https:'].includes(url.protocol))throw Error('API_INTERNAL_URL must be an origin (optionally with a path prefix) without a trailing slash');}
+if(!['lax','none'].includes(config.cookieSameSite))throw Error('COOKIE_SAMESITE must be lax or none');
+if(config.cookieSameSite==='none'&&![config.apiUrl,config.portalUrl,config.storeUrl].every(v=>v.startsWith('https://'))&&!local)throw Error('COOKIE_SAMESITE=none requires HTTPS origins');
 if(config.storeUrl===config.portalUrl)throw Error('The sample store must use a separate origin');
 if(!local&&(config.singleWorkspace||!process.env.DATABASE_URL||!process.env.STORE_DATABASE_URL||config.databaseUrl===config.storeDatabaseUrl))throw Error('Public demo requires isolated workspaces and explicitly configured separate database credentials');
