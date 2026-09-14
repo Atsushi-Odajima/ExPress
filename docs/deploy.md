@@ -89,12 +89,12 @@ Portal は **ビルド時**に `PORTAL_URL` / `API_URL` / `STORE_URL` / `API_INT
 |`LISTEN_HOST`|`0.0.0.0`（コンテナ内では必須）|
 |`PORT` / `API_PORT` / `STORE_PORT` / `PORTAL_PORT`|ホストが注入する `PORT` をそのまま使えます|
 |`DATABASE_URL`|台帳DB（role `exw`）|
-|`STORE_DATABASE_URL`|EC用DB（role `exw_store`）。`DATABASE_URL` と別サーバーまたは別DB・別role|
-|`ENCRYPTION_KEY`|32バイトの hex（`openssl rand -hex 32`）。API と worker は同じ値|
+|`STORE_DATABASE_URL`|EC用DB（role `exw_store`）。`DATABASE_URL` と別サーバーまたは別DB・別role。代わりに `STORE_DB_HOST`＋`STORE_DB_PASSWORD`（＋`STORE_DB_PORT`）を与えると組み立てる|
+|`ENCRYPTION_KEY`|32バイト（64桁 hex、またはその base64）。API と worker は同じ値|
 |`PORTAL_URL`|`https://<Portalのホスト>`|
 |`API_URL`|`https://<Portalのホスト>/api`|
 |`STORE_URL`|`https://<ECのホスト>`|
-|`API_INTERNAL_URL`|API サービスの内部アドレス（Render：`http://exw-api:10000`、Railway：`http://exw-api.railway.internal:<PORT>`、Fly：`http://exw-api.internal:<PORT>`）。単一ホストなら `http://127.0.0.1:4000`|
+|`API_INTERNAL_URL`|API サービスの内部アドレス（Railway：`http://exw-api.railway.internal:<PORT>`、Fly：`http://exw-api.internal:<PORT>`）。単一ホストなら `http://127.0.0.1:4000`。Render では `API_INTERNAL_HOSTPORT`（`fromService` の `hostport`）でも可|
 |`WEBHOOK_ALLOWLIST`|`https://<ECのホスト>/webhooks/express-wallet`|
 |`WORKER_IN_API`|`true` にすると worker のループを API プロセス内で実行（無料枠に常駐 worker がないホスト向け）。既定 `false` は独立プロセス|
 |`SETTLEMENT_DELAY_SECONDS`|精算待機秒数（例 `60`）|
@@ -109,16 +109,18 @@ DB接続文字列は各社が示す **SSL 必須**の形式（`?sslmode=require`
 - 同一サーバーに置く場合は `packages/database/init-store.sql` と同じ内容（`exw_store` role 作成、`exw_store` DB 作成、`REVOKE CONNECT ON DATABASE exw FROM exw_store`）を管理者権限で実行します。
 - 無料枠のDBには期限や自動停止の条件があります。各社の最新の条件を確認してください。
 
-### Render（Blueprint）
+### Render（Blueprint、手作業は適用の1回だけ）
 
-`render.yaml` は無料枠向けの構成です：無料 PostgreSQL 1つ（台帳）、web サービス3つ（API + worker 内蔵、EC、Portal）。
+`render.yaml` は無料枠向けで、値の入力なしに適用できます。秘密（`ENCRYPTION_KEY` ×2、EC 用 DB パスワード）は Render が生成し（`generateValue`）、DB 接続は `fromDatabase`、内部アドレスは `fromService` で配線します。Docker ビルドには環境変数が渡らないため、Render では Node ランタイムでビルドします（`Dockerfile` は他ホスト用）。
 
-1. GitHub にリポジトリを置き、Render ダッシュボードで **New → Blueprint** からリポジトリを選ぶ。
-2. `sync: false` の値を聞かれる。初回は `STORE_DATABASE_URL`（Supabase などの接続文字列）と `ENCRYPTION_KEY` を入れ、URL 系は仮の値（`https://example.invalid` など）で作成する。
-3. 作成後に各サービスの実ホスト名（`https://exw-portal-xxxx.onrender.com` など）を確認し、全サービスの `PORTAL_URL` / `API_URL`（`<Portal>/api`）/ `STORE_URL` / `API_INTERNAL_URL`（`http://exw-api:10000`）/ `WEBHOOK_ALLOWLIST` を実値に更新して **再デプロイ**する（Portal はビルドし直しが必要）。
-4. `https://<Portal>/wallet` をスマートフォンで開く。
+構成：無料 PostgreSQL 18 が1つ（`exw-ledger`。無料 DB はワークスペースに1つまで）、Web サービス3つ（`exw-api-k7d2`＝API＋内蔵 worker、`exw-store-k7d2`＝EC、`exw-portal-k7d2`＝Portal）。EC 用 DB は同じインスタンス上に別 role・別 DB として作ります：API が起動時に `packages/database/src/bootstrap-store.ts` を実行し、role/DB `exw_store` を作成して台帳 DB への CONNECT を取り消します（ローカルの `init-store.sql` と同じ分離）。EC は `STORE_DB_HOST` と共有の `STORE_DB_PASSWORD` から接続文字列を組み立てます。
 
-有料プランでは `render.yaml` 末尾のコメントの `exw-worker` を有効化し、API の `WORKER_IN_API` を `false` にすると独立 worker 構成になります。無料 web サービスはアイドル後に停止し、初回アクセスに1分程度かかります。
+1. Render ダッシュボードで **New → Blueprint** → リポジトリ `Atsushi-Odajima/ExPress`、ブランチ `claude/express-completion-delivery-e92pt1` を選び **Apply**。既存の同名リソース（`exw-ledger`）は採用され、重複作成されません。
+2. 初回ビルドは各サービス5〜10分。API のログに `bootstrap-store: role exw_store owns database exw_store` と `ExPress migration complete` が出れば DB 分離と migration は完了。EC は API より先に起動すると role 未作成で失敗するので、その場合は EC を **Manual Deploy** で再デプロイ。
+3. `https://exw-portal-k7d2.onrender.com/wallet` をスマートフォンで開く。
+4. 公開 URL はサービス名から予測して `render.yaml` に固定しています。名前が既に使われていて Render が接尾辞を付けた場合は、3サービスの `PORTAL_URL` / `API_URL` / `STORE_URL` / `WEBHOOK_ALLOWLIST` を実 URL に変えて Portal を再デプロイします（Render コネクタからも更新可能）。
+
+有料プランでは `type: worker` の独立 worker を追加し、API の `WORKER_IN_API` を `false` にできます。無料 Web サービスはアイドル後に停止し初回アクセスに1分程度かかり、無料 DB は作成から30日で期限切れになります（作成時の `expiresAt` に表示）。
 
 ### Railway / Fly.io
 

@@ -48,3 +48,5 @@
 - `WORKER_IN_API=true` を追加：無料枠に常駐 worker がないホスト向けに、API プロセス内で同じ `tick()` ループを回す明示的な選択肢。既定は従来どおり独立 worker。
 - `LISTEN_HOST`（既定 127.0.0.1、コンテナでは 0.0.0.0）と `PORT` フォールバック（`API_PORT`／`STORE_PORT`／`PORTAL_PORT` 未指定時）を追加し、Playground と EC のサーバー間呼び出しは公開 `API_URL` ではなく `API_INTERNAL_URL` を使う。
 - E2E 1 は Portal の「NORTHSTAR STOREへ」ボタン経由（`GET /connect`）に変更し、無効コードの 401 と戻りリンクも検証する。E2E 4 は従来の `POST /connect` を残して両経路を保つ。
+- Render への実配備は Blueprint 一択にした。理由：Render は Docker ビルドに環境変数を渡さず Portal の URL 埋め込みができない（Node ランタイムなら可）、コネクタの作成ツールは Docker 非対応、REST API は鍵が無効だった、そして秘密をチャットに出さず `generateValue`／`fromDatabase`／`fromService` で配線できるため。無料 DB は1つしか持てず Supabase 無料枠も上限のため、EC 用 DB は同一インスタンス上の別 role・別 DB（`bootstrap-store.ts`、台帳 DB への CONNECT 取消）とした。
+- `ENCRYPTION_KEY` は 64 桁 hex に加えて 32 バイトの base64 も受け付け hex に正規化する（Render の `generateValue` が base64 のため）。`STORE_DATABASE_URL` は `STORE_DB_HOST`／`STORE_DB_PASSWORD` からの組み立て、`API_INTERNAL_URL` は `API_INTERNAL_HOSTPORT` からの導出を許す。
