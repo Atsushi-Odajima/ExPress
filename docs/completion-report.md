@@ -118,3 +118,13 @@ E2E 7ケース：別オリジンSDK購入→一部出荷→部分返金／英語
 - **検証（トンネルスクリプト）**：スタブ `cloudflared`（実物と同じ形式で URL を stderr に出力）で `--skip-build --skip-start` を実行し、`PORTAL_URL`／`API_URL=<Portal>/api`／`STORE_URL`／`API_INTERNAL_URL`／`WEBHOOK_ALLOWLIST`／`DEMO_MODE` の書き込み、終了時の `.env` 復元とバックアップ削除、`--keep-env` 時の保持、バイナリ不在時のエラーメッセージを確認。
 - **最終確認**：`pnpm run typecheck` 合格、`pnpm run test` **39/39**（22:39 UTC、PostgreSQL 18.6）、`.env` は作業前の内容に復元済み。
 - **未実施（正直な区分）**：実際の Cloudflare クイックトンネル接続（この環境は外向き通信が遮断され、cloudflared の取得も 403）、Render／Railway／Fly.io／Supabase への実配備、独自ドメイン・Cloudflare DNS。無料枠の条件（常駐 worker の有無、DBの期限・停止）は各社の最新の規約を確認する必要があり、ここでは契約・課金を一切行っていない。
+
+## 11. 追加依頼：コネクタ／鍵による実配備の準備（2026-09-14 05:30〜06:20 UTC）
+
+依頼：Cloudflare・Supabase・Render の鍵とコネクタを設定したので、確認して配備を進める。
+
+- **鍵の検証（値は非表示）**：`CLOUDFLARE_API_TOKEN`（有効、アカウント ID と一致）、`SUPABASE_ACCESS_TOKEN`（有効）は合格。`RENDER_API_KEY` と `RAILWAY_TOKEN` は形式は正しいが API が Unauthorized を返し、無効。Render は OAuth コネクタで代替。
+- **コネクタで実施したこと**：Render ワークスペース「My Workspace」に無料 PostgreSQL 18 `exw-ledger`（シンガポール、DB `exw_ledger`、期限 2026-10-14）を作成。2つ目の無料 DB は「cannot have more than one active free tier database」で拒否。Supabase の新規プロジェクトは無料枠の稼働2件上限で拒否（既存プロジェクトには触れていない）。
+- **設計の変更**：EC 用 DB を同一インスタンス上の別 role・別 DB に変更し、`packages/database/src/bootstrap-store.ts`（API 起動時に実行、冪等、台帳 DB への CONNECT 取消）を追加。`render.yaml` を Node ランタイムの完全自動 Blueprint（`generateValue`／`fromDatabase`／`fromService`、入力値なし）に書き直し。`ENCRYPTION_KEY` の base64 受け付け、`STORE_DB_HOST`＋`STORE_DB_PASSWORD` からの接続文字列組み立て、`API_INTERNAL_HOSTPORT` を追加。
+- **検証**：`pnpm run typecheck` 合格、`pnpm run test` 39/39（PostgreSQL 18.6）。ブートストラップを Compose DB に対して2回実行し、2回目が無変更で、`exw_store` role が自 DB に接続でき台帳 DB では「permission denied」になることを確認。組み立てた接続文字列で EC を起動し `/api/products` 200。base64 の 32 バイト鍵が 64 桁 hex に正規化され、不正な鍵が拒否されることを確認。
+- **未実施**：Blueprint の適用（Render ダッシュボードでの1回の操作が必要）とその後の実 URL 確認。予測した公開 URL は `https://exw-portal-k7d2.onrender.com` ほか。Render コネクタの SQL ツールは TLS 未対応のため DB ユーザー権限の事前確認はできず、`bootstrap-store` 実行ログで確認する。
