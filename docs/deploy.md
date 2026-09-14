@@ -111,13 +111,13 @@ DB接続文字列は各社が示す **SSL 必須**の形式（`?sslmode=require`
 
 ### Render（Blueprint、手作業は適用の1回だけ）
 
-`render.yaml` は無料枠向けで、値の入力なしに適用できます。秘密（`ENCRYPTION_KEY` ×2、EC 用 DB パスワード）は Render が生成し（`generateValue`）、DB 接続は `fromDatabase` で配線します。API への内部呼び出し（Portal の `/api` 転送、EC の SDK、Playground）は API の公開 URL を使います。無料インスタンスからは Render の private network のホスト名が解決できなかった（`getaddrinfo ENOTFOUND`）ためです。Docker ビルドには環境変数が渡らないため、Render では Node ランタイムでビルドします（`Dockerfile` は他ホスト用）。
+`render.yaml` は無料枠向けで、値の入力なしに適用できます。秘密（`ENCRYPTION_KEY` ×2、EC 用 DB パスワード）は Render が生成し（`generateValue`）、DB 接続は `fromDatabase` で配線します。API への内部呼び出し（Portal の `/api` 転送、EC の SDK、Playground）は API の公開 URL を使います。Render の仕様で「無料 Web サービスは private network の要求を送れるが受け取れない」ため、API の内部ホスト名は解決できません（実測 `getaddrinfo ENOTFOUND`）。有料インスタンスなら `API_INTERNAL_HOSTPORT`（`fromService` の `hostport`）に戻せます。Docker ビルドには環境変数が渡らないため、Render では Node ランタイムでビルドします（`Dockerfile` は他ホスト用）。
 
 構成：無料 PostgreSQL 18 が1つ（`exw-ledger`。無料 DB はワークスペースに1つまで）、Web サービス3つ（`exw-api-k7d2`＝API＋内蔵 worker、`exw-store-k7d2`＝EC、`exw-portal-k7d2`＝Portal）。EC 用 DB は同じインスタンス上に別 role・別 DB として作ります：API が起動時に `packages/database/src/bootstrap-store.ts` を実行し、role/DB `exw_store` を作成して台帳 DB への CONNECT を取り消します（ローカルの `init-store.sql` と同じ分離）。EC は `STORE_DB_HOST` と共有の `STORE_DB_PASSWORD` から接続文字列を組み立てます。
 
 1. Render ダッシュボードで **New → Blueprint** → リポジトリ `Atsushi-Odajima/ExPress`、ブランチ `claude/express-completion-delivery-e92pt1` を選び **Apply**。既存の同名リソース（`exw-ledger`）は採用され、重複作成されません。
 2. 初回ビルドは各サービス5〜10分。API のログに `bootstrap-store: role exw_store owns database exw_store` と `ExPress migration complete` が出れば DB 分離と migration は完了。EC は API より先に起動すると role 未作成で失敗するので、その場合は EC を **Manual Deploy** で再デプロイ。
-3. `https://exw-portal-k7d2.onrender.com/wallet` をスマートフォンで開く。
+3. `https://exw-portal-k7d2.onrender.com/wallet` をスマートフォンで開く（2026-09-14 に実配備済み。EC は `https://exw-store-k7d2.onrender.com`、API 文書は `https://exw-portal-k7d2.onrender.com/docs`）。
 4. 公開 URL はサービス名から予測して `render.yaml` に固定しています。名前が既に使われていて Render が接尾辞を付けた場合は、3サービスの `PORTAL_URL` / `API_URL` / `STORE_URL` / `WEBHOOK_ALLOWLIST` を実 URL に変えて Portal を再デプロイします（Render コネクタからも更新可能）。
 
 有料プランでは `type: worker` の独立 worker を追加し、API の `WORKER_IN_API` を `false` にできます。無料 Web サービスはアイドル後に停止し初回アクセスに1分程度かかり、無料 DB は作成から30日で期限切れになります（作成時の `expiresAt` に表示）。

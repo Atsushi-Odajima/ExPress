@@ -128,3 +128,13 @@ E2E 7ケース：別オリジンSDK購入→一部出荷→部分返金／英語
 - **設計の変更**：EC 用 DB を同一インスタンス上の別 role・別 DB に変更し、`packages/database/src/bootstrap-store.ts`（API 起動時に実行、冪等、台帳 DB への CONNECT 取消）を追加。`render.yaml` を Node ランタイムの完全自動 Blueprint（`generateValue`／`fromDatabase`／`fromService`、入力値なし）に書き直し。`ENCRYPTION_KEY` の base64 受け付け、`STORE_DB_HOST`＋`STORE_DB_PASSWORD` からの接続文字列組み立て、`API_INTERNAL_HOSTPORT` を追加。
 - **検証**：`pnpm run typecheck` 合格、`pnpm run test` 39/39（PostgreSQL 18.6）。ブートストラップを Compose DB に対して2回実行し、2回目が無変更で、`exw_store` role が自 DB に接続でき台帳 DB では「permission denied」になることを確認。組み立てた接続文字列で EC を起動し `/api/products` 200。base64 の 32 バイト鍵が 64 桁 hex に正規化され、不正な鍵が拒否されることを確認。
 - **未実施**：Blueprint の適用（Render ダッシュボードでの1回の操作が必要）とその後の実 URL 確認。予測した公開 URL は `https://exw-portal-k7d2.onrender.com` ほか。Render コネクタの SQL ツールは TLS 未対応のため DB ユーザー権限の事前確認はできず、`bootstrap-store` 実行ログで確認する。
+
+## 12. Render への実配備（2026-09-14 06:44〜06:55 UTC）
+
+利用者が Render ダッシュボードで Blueprint（ブランチ `claude/express-completion-delivery-e92pt1` の `render.yaml`）を適用。以後は私がコネクタとログで確認・修正した。
+
+- **作成されたもの**：Web サービス `exw-api-k7d2`（API＋内蔵 worker）、`exw-store-k7d2`（EC）、`exw-portal-k7d2`（Portal）。すべて Free・Singapore・Node ランタイム。公開 URL は予測どおり接尾辞なし。DB は既存の無料 PostgreSQL 18 `exw-ledger` が採用された（期限 2026-10-14）。
+- **初回起動の失敗と修正1**：`bootstrap-store` が 42501（`check_can_set_role`）で停止。Render の DB ユーザーは CREATEROLE/CREATEDB を持つが作成した role へ SET ROLE できず、`ALTER SCHEMA public OWNER TO exw_store` が拒否された。所有者移転をやめ CREATE 権限付与のみに変更（コミット `91d34f7`）。再起動ログ：`bootstrap-store: role exw_store owns database exw_store; CONNECT to exw_ledger revoked` → `ExPress migration complete` → `ExPress worker loop running inside the API process`。
+- **修正2**：Portal の `/api` 転送が `getaddrinfo ENOTFOUND exw-api-k7d2`。Render の仕様「無料 Web サービスは private network の要求を受け取れない」のため、`API_INTERNAL_URL` を API の公開 URL に変更（コミット `bd1bdf1`）。Blueprint 自動同期後、`/api/v1/health` 200。
+- **公開 URL での実測（curl、06:52 UTC）**：Portal `/wallet` 200、`/api/v1/health` 200、`/docs` と静的アセット 200、EC `/` と `/api/products` 200。`POST /api/v1/demo/start` 200（`exw_session`／`exw_demo` を `Secure; HttpOnly; SameSite=Lax` で発行）→ `/api/v1/session` でユーザーと CSRF を取得 → `POST /api/v1/demo/store-handoff` で接続コード → `GET <EC>/connect?code=` が 303 で EC トップへ → EC `/api/session` が接続済み → EC の `POST /api/orders`（EC サーバーから API へ SDK 呼び出し）が注文を作成し、checkout URL は Portal ホスト。無効コードの `GET /connect` は 401。OpenAPI の `servers` は `https://exw-portal-k7d2.onrender.com/api`。
+- **未実施**：この作業環境のプロキシが Chromium の TLS トンネルを切断するため、公開 URL に対する Playwright E2E とスクリーンショットは取れていない。画面の確認は利用者のスマートフォンで行う。無料インスタンスはアイドル後に停止し初回アクセスに最大1分程度かかる。
