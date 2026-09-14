@@ -130,6 +130,58 @@ DB接続文字列は各社が示す **SSL 必須**の形式（`?sslmode=require`
 
 Render などのホスト名のまま動きますが、独自ドメインを使う場合は Cloudflare DNS に `CNAME portal → <Portalのホスト>`、`CNAME shop → <ECのホスト>` を登録し（プロキシ有効、SSL/TLS は Full (strict)）、ホスト側でカスタムドメインを追加します。`PORTAL_URL` / `API_URL` / `STORE_URL` / `WEBHOOK_ALLOWLIST` を独自ドメインに変えて Portal を再ビルドしてください。独自ドメインは Public Suffix List に載らないため Cookie の制約は緩みますが、`/api` プロキシ構成をそのまま使うのが最も単純です。
 
+## C. 配備作業を Claude Code に任せるための一度だけの設定
+
+パスワードや Google／GitHub ログインを渡す必要はありません。次の2つを設定すると、以後はどのリポジトリのクラウドセッションでも Claude が自分で配備できます。
+
+### C-1. コネクタ（各社のログイン画面で認可するだけ）
+
+1. claude.ai を開き、**設定 → コネクタ**（Settings → Connectors）→ **コネクタを閲覧**。
+2. **Supabase**、**Cloudflare Developer Platform**、**Render**（Railway を使うなら Railway）を選び **接続**。各社のログイン画面が開くので、Google／GitHub 認証のまま認可する。トークンは Claude に渡らない。
+3. claude.ai/code でセッションを作るとき、そのコネクタを有効にする（コネクタはセッションごとに選ぶ。通信は Anthropic 側を経由するので、環境の許可ドメインに追加する必要はない）。
+
+コネクタで使える操作は各社の MCP サーバーが公開する範囲に限られる（例：Supabase はプロジェクト作成・SQL 実行、Render は Web サービス／PostgreSQL 作成、Cloudflare は Workers／KV 中心）。ツール呼び出しには承認を求められることがある。
+
+### C-2. クラウド環境（ネットワーク許可・CLI・トークン）
+
+1. claude.ai/code を開き、メッセージ欄の**上の行にある雲のアイコン**（現在の環境名「Default」が表示されている）を押す。
+2. **Add cloud environment** を選び、次を入力する。
+   - **Name**：`Deploy`
+   - **Network access**：**Custom**（既定の許可リストを含める）。**Allowed domains** に1行ずつ：
+     ```text
+     api.cloudflare.com
+     api.supabase.com
+     *.supabase.co
+     *.supabase.com
+     api.render.com
+     *.onrender.com
+     backboard.railway.app
+     *.up.railway.app
+     ```
+     迷う場合は **Full** でもよい（任意のドメインに接続できる）。
+   - **Environment variables**（`.env` 形式。環境を使う人と Claude が読める値なので、用途を絞ったトークンにする）：
+     ```text
+     CLOUDFLARE_API_TOKEN=...
+     CLOUDFLARE_ACCOUNT_ID=...
+     SUPABASE_ACCESS_TOKEN=...
+     RENDER_API_KEY=...
+     ```
+   - **Setup script**：`scripts/cloud-setup.sh` の内容を貼る（pnpm・wrangler・Railway CLI を入れる。初回だけ実行され約7日キャッシュされる）。
+3. 作成後、同じ雲アイコンから `Deploy` の**歯車**で編集を開くと、Pro／Max プランでは **API credentials** 欄が現れる。**Add credential** で、値を Claude に見せずに使わせたいトークンを登録できる（Credential type は Bearer のまま。Allowed websites に `api.cloudflare.com` など、Custom headers は `Authorization` / `Bearer` / トークン）。この方式は curl などの HTTPS リクエストに代理サーバーが鍵を付ける仕組みで、CLI が自前でトークンを要求する場合は環境変数の方を使う。
+4. 新しいセッションを作るときに環境 `Deploy` とコネクタを選び、「docs/deploy.md の B を Render と Supabase に実配備して」と依頼する。
+
+### C-3. トークンの発行場所と権限
+
+|サービス|場所|権限の目安|
+|---|---|---|
+|Cloudflare API トークン|My Profile → API Tokens → Create Token（テンプレート「Edit Cloudflare Workers」）|必要なら Zone: DNS Edit、Account: Cloudflare Tunnel Edit を追加。有効期限を付ける|
+|Cloudflare Tunnel トークン|Zero Trust → Networks → Tunnels → Create → 表示されるトークン|そのトンネル1本だけ。`cloudflared tunnel run --token ...`|
+|Supabase|Account → Access Tokens → Generate new token|プロジェクト作成・SQL 実行。DB 接続文字列はプロジェクトごとに別途|
+|Render|Account Settings → API Keys|Blueprint 適用・サービス作成|
+|Railway|Account Settings → Tokens|プロジェクト単位のトークンが望ましい|
+
+注意：トークンはチャットに貼らない（会話記録に残る）。デモ用に別アカウント／別組織を使うと既存プロジェクトを守れる。クラウドセッションからは `cloudflared` のトンネル本体（TCP/QUIC 7844）は通らない見込みなので、トンネル公開は PC で行う。
+
 ## この環境で検証したこと・していないこと
 
 - 検証済み：`API_URL=<Portal>/api` の同一オリジン構成で本番ビルド → 4サービス起動 → Playwright E2E（desktop・mobile）、Swagger UI（`/docs`）とアセットの転送、`Set-Cookie` の通過。`GET /connect?code=` によるEC引き渡し（E2E 1がPortalのボタン経由で実行）。`Dockerfile` のビルドと、イメージから API（migration 実行）・EC・Portal を起動して Compose の PostgreSQL に接続するスモーク。`scripts/tunnel.ts` はスタブの `cloudflared` で URL 解析・`.env` 書き換え・復元を確認。
