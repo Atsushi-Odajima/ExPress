@@ -9,7 +9,7 @@
 #                     which creates role/database exw_store and revokes that role's CONNECT on the ledger database.
 #   exw-api-k7d2      API with the worker loop inside (WORKER_IN_API=true; Render's free tier has no background workers)
 #   exw-store-k7d2    NORTHSTAR sample store (separate origin, separate database role)
-#   exw-portal-k7d2   Next Portal; forwards /api and /docs to the API over the private network
+#   exw-portal-k7d2   Next Portal; forwards /api and /docs to the API (via the API's public URL, see API_INTERNAL_URL)
 #
 # Services use the native Node runtime (not the Dockerfile) because Render does not pass environment variables to
 # Docker builds, and the Portal embeds PORTAL_URL / API_URL / STORE_URL at build time.
@@ -63,8 +63,8 @@ services:
         value: https://exw-portal-k7d2.onrender.com/api
       - key: STORE_URL
         value: https://exw-store-k7d2.onrender.com
-      - key: API_INTERNAL_HOSTPORT
-        fromService: {type: web, name: exw-api-k7d2, property: hostport}
+      - key: API_INTERNAL_URL # the API's own public URL: Render's private hostnames did not resolve from free instances (getaddrinfo ENOTFOUND)
+        value: https://exw-api-k7d2.onrender.com
       - key: WEBHOOK_ALLOWLIST
         value: https://exw-store-k7d2.onrender.com/webhooks/express-wallet
       - key: SETTLEMENT_DELAY_SECONDS
@@ -99,8 +99,8 @@ services:
         value: https://exw-portal-k7d2.onrender.com/api
       - key: STORE_URL
         value: https://exw-store-k7d2.onrender.com
-      - key: API_INTERNAL_HOSTPORT
-        fromService: {type: web, name: exw-api-k7d2, property: hostport}
+      - key: API_INTERNAL_URL # the API's own public URL: Render's private hostnames did not resolve from free instances (getaddrinfo ENOTFOUND)
+        value: https://exw-api-k7d2.onrender.com
 
   - type: web
     name: exw-portal-k7d2
@@ -122,5 +122,5 @@ services:
         value: https://exw-portal-k7d2.onrender.com/api
       - key: STORE_URL
         value: https://exw-store-k7d2.onrender.com
-      - key: API_INTERNAL_HOSTPORT # baked into the /api and /docs rewrites at build time
-        fromService: {type: web, name: exw-api-k7d2, property: hostport}
+      - key: API_INTERNAL_URL # the API's own public URL: Render's private hostnames did not resolve from free instances (getaddrinfo ENOTFOUND)
+        value: https://exw-api-k7d2.onrender.com

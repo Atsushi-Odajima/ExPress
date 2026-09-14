@@ -111,7 +111,7 @@ DB接続文字列は各社が示す **SSL 必須**の形式（`?sslmode=require`
 
 ### Render（Blueprint、手作業は適用の1回だけ）
 
-`render.yaml` は無料枠向けで、値の入力なしに適用できます。秘密（`ENCRYPTION_KEY` ×2、EC 用 DB パスワード）は Render が生成し（`generateValue`）、DB 接続は `fromDatabase`、内部アドレスは `fromService` で配線します。Docker ビルドには環境変数が渡らないため、Render では Node ランタイムでビルドします（`Dockerfile` は他ホスト用）。
+`render.yaml` は無料枠向けで、値の入力なしに適用できます。秘密（`ENCRYPTION_KEY` ×2、EC 用 DB パスワード）は Render が生成し（`generateValue`）、DB 接続は `fromDatabase` で配線します。API への内部呼び出し（Portal の `/api` 転送、EC の SDK、Playground）は API の公開 URL を使います。無料インスタンスからは Render の private network のホスト名が解決できなかった（`getaddrinfo ENOTFOUND`）ためです。Docker ビルドには環境変数が渡らないため、Render では Node ランタイムでビルドします（`Dockerfile` は他ホスト用）。
 
 構成：無料 PostgreSQL 18 が1つ（`exw-ledger`。無料 DB はワークスペースに1つまで）、Web サービス3つ（`exw-api-k7d2`＝API＋内蔵 worker、`exw-store-k7d2`＝EC、`exw-portal-k7d2`＝Portal）。EC 用 DB は同じインスタンス上に別 role・別 DB として作ります：API が起動時に `packages/database/src/bootstrap-store.ts` を実行し、role/DB `exw_store` を作成して台帳 DB への CONNECT を取り消します（ローカルの `init-store.sql` と同じ分離）。EC は `STORE_DB_HOST` と共有の `STORE_DB_PASSWORD` から接続文字列を組み立てます。
 
