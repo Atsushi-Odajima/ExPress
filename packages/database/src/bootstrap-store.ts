@@ -26,10 +26,11 @@ try{
  // The store role must never reach the ledger database.
  await admin.query(`REVOKE CONNECT ON DATABASE ${id(ledgerDb)} FROM PUBLIC`);
  await admin.query(`REVOKE ALL ON DATABASE ${id(ledgerDb)} FROM ${id(role)}`);
- // Inside the store database the role owns the public schema so it can create its own tables (PostgreSQL 15+ removed CREATE for everyone).
+ // Inside the store database the role gets CREATE on the public schema so it can create its own tables (PostgreSQL 15+ removed CREATE for everyone).
+ // Ownership is not transferred: managed hosts grant CREATEROLE/CREATEDB without SET ROLE on created roles, so ALTER ... OWNER would fail (42501).
  const storeUrl=new URL(config.databaseUrl);storeUrl.pathname='/'+dbName;
  const store=new pg.Client({connectionString:storeUrl.toString()});await store.connect();
- try{await store.query(`GRANT USAGE, CREATE ON SCHEMA public TO ${id(role)}`);await store.query(`ALTER SCHEMA public OWNER TO ${id(role)}`);}finally{await store.end();}
+ try{await store.query(`GRANT USAGE, CREATE ON SCHEMA public TO ${id(role)}`);}finally{await store.end();}
  const denied=await admin.query('SELECT has_database_privilege($1,$2,$3) AS ok',[role,ledgerDb,'CONNECT']);
  if(denied.rows[0].ok)throw Error(`${role} can still connect to ${ledgerDb}`);
  console.log(`bootstrap-store: role ${role} owns database ${dbName}; CONNECT to ${ledgerDb} revoked`);
