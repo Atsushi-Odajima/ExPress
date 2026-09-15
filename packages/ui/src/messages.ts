@@ -111,6 +111,7 @@ ExPressで、ひとつにつながる。|Together in ExPress.
 デモアカウントでログイン|Sign in with the demo account
 デモアカウントで開始|Start with the demo account
 デモサーバーを起動しています…|Starting the demo server…
+無料プランのため、最初の起動に30〜60秒ほどかかります。このままお待ちください。|On the free plan the first start takes 30 to 60 seconds. Hold on.
 デモサーバーが応答しませんでした。ページを再読み込みしてお試しください。|The demo server did not answer. Reload the page and try again.
 画面デモ用の表示です。入力内容は認証に使わず、サンプル利用者「demo josep」のデモ環境をそのまま開きます。|A sign-in panel for show: nothing here is checked, and the button opens the sample workspace of demo josep.
 デモサーバーが起動中です。1分ほど待ってから、もう一度お試しください。|The demo server is waking up. Wait about a minute and try again.
