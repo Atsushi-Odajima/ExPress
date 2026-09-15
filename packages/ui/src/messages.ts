@@ -108,6 +108,7 @@ ExPressで、ひとつにつながる。|Together in ExPress.
 デモメール|Demo email
 デモメールまたはID|Demo email or ID
 デモアカウント|Demo account
+デモサーバーが起動中です。1分ほど待ってから、もう一度お試しください。|The demo server is waking up. Wait about a minute and try again.
 サンプル利用者「青山 はるか」として、あなた専用のデモ環境に入ります。|Signs you in as the sample user Haruka Aoyama, in your own demo workspace.
 パスワード|Password
 ログイン|Sign in

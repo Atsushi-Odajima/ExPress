@@ -12,6 +12,7 @@
 
 - 手段A：PC で `pnpm exec tsx scripts/tunnel.ts`（cloudflared クイックトンネル、アカウント不要）。
 - 手段B：`render.yaml`（Render Blueprint、Node ランタイム、秘密は Render 生成、無料 DB 1つ＋ `bootstrap-store.ts` で EC 用 role/DB を分離）。`Dockerfile` は他ホスト用。Render／Supabase はコネクタ（MCP）でも操作できる。
+- ようこそ画面の「作成済みアカウントでログイン」は組み込みデモ資格情報（`DEMO_LOGIN_ID`／`DEMO_LOGIN_PASSWORD`、既定 `kuro`／`0130`）でサンプル利用者として入る。訪問者ごとの隔離workspaceを開くだけで、権限は「デモウォレットをはじめる」と同じ。`DEMO_LOGIN_PASSWORD=` を空にすると無効化。
 - 公開構成では `API_URL=<PORTAL_URL>/api`（Portal が `/api` と `/docs` を `API_INTERNAL_URL` へ転送）、EC 引き渡しは `GET /connect?code=`。
 - 配備用の資格情報は次の環境変数（またはクラウド環境の API credentials）にある前提で動く。存在しなければ利用者に設定を依頼し、チャットにトークンを貼らせない。
   - `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`（wrangler / Cloudflare API）
