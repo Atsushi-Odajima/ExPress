@@ -33,6 +33,11 @@ export const config = {
   /** Loopback by default; containers must bind 0.0.0.0. */
   listenHost:process.env.LISTEN_HOST??'127.0.0.1',
   workerInApi:process.env.WORKER_IN_API==='true',
+  /** Built-in sign-in for the sample consumer account, shown on the welcome screen. It only opens the visitor's
+   *  own isolated workspace, exactly what the "start a demo wallet" button creates, so it grants nothing extra.
+   *  Set DEMO_LOGIN_PASSWORD to an empty value to remove the built-in sign-in. */
+  demoLoginId:(process.env.DEMO_LOGIN_ID??'kuro').trim().toLowerCase(),
+  demoLoginPassword:process.env.DEMO_LOGIN_PASSWORD??'0130',
   /** lax when Portal, API and store share one site (localhost ports, one custom domain, or the /api proxy); none only for HTTPS split-site setups. */
   cookieSameSite:(process.env.COOKIE_SAMESITE??'lax') as 'lax'|'none',
   local, key:encryptionKey(), singleWorkspace:process.env.SINGLE_WORKSPACE==='true',
