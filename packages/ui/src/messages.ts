@@ -108,6 +108,11 @@ ExPressで、ひとつにつながる。|Together in ExPress.
 デモメール|Demo email
 デモメールまたはID|Demo email or ID
 デモアカウント|Demo account
+デモアカウントでログイン|Sign in with the demo account
+デモアカウントで開始|Start with the demo account
+デモサーバーを起動しています…|Starting the demo server…
+デモサーバーが応答しませんでした。ページを再読み込みしてお試しください。|The demo server did not answer. Reload the page and try again.
+画面デモ用の表示です。入力内容は認証に使わず、サンプル利用者「青山 はるか」のデモ環境をそのまま開きます。|A sign-in panel for show: nothing here is checked, and the button opens the sample workspace of Haruka Aoyama.
 デモサーバーが起動中です。1分ほど待ってから、もう一度お試しください。|The demo server is waking up. Wait about a minute and try again.
 サンプル利用者「青山 はるか」として、あなた専用のデモ環境に入ります。|Signs you in as the sample user Haruka Aoyama, in your own demo workspace.
 パスワード|Password
