@@ -1,10 +1,28 @@
+<p align="center">
+  <img src="docs/assets/express-banner.svg" alt="ExPress" width="640">
+</p>
+
+<p align="center">
+  <a href="https://exw-portal-k7d2.onrender.com/wallet">ライブデモ</a> ·
+  <a href="docs/completion-report.md">完成報告</a> ·
+  <a href="docs/requirements-matrix.md">要件対応表</a> ·
+  <a href="docs/SPECIFICATION.md">仕様</a> ·
+  <a href="docs/final-review-guide.md">確認ガイド</a>
+</p>
+
 # ExPress
 
-オンラインウォレットと、外部EC向けホスト型決済の自作デモです。表示名は **ExPress**、コード識別子は `express-wallet` / `@exw/*`。実際の預金・送金・カード決済・本人確認審査・メール送信は実行しません。外部金融機関との境界は `MockProvider` で模擬し、残高・複式台帳・注文・ジョブなどの内部処理は実装しています。
+**国境をまたぐ送金と外貨での支払いを、隠れコストのない実勢レートと明朗な少額手数料で扱うオンライン金融サービス。** ExPress はその製品像を、決済基盤の内側から自作したポートフォリオ実装です。表示名は **ExPress**、コード識別子は `express-wallet` / `@exw/*`。
 
-利用者、加盟店2社と運営者を訪問者ごとのworkspaceへ生成し、残高払い、模擬カード直接払い、部分売上確定、返金、出金、継続課金をDB・複式台帳・独立ワーカー経由で処理します。サンプルEC「NORTHSTAR」は別オリジン・別DB・別権限で動作し、サーバーSDK・公開API・署名付きWebhookだけでExPressと連携します。
+利用者・加盟店2社・運営者を訪問者ごとの隔離workspaceへ生成し、残高払い、模擬カード直接払い、部分売上確定、返金、出金、継続課金を、実DB・複式台帳・独立ワーカー経由で処理します。サンプルEC「NORTHSTAR」は別オリジン・別DB・別権限で動作し、サーバーSDK・公開API・署名付きWebhookだけで ExPress と連携します。
 
-**完成版の範囲・実測結果・制約は [docs/completion-report.md](docs/completion-report.md)、要件ごとの対応は [docs/requirements-matrix.md](docs/requirements-matrix.md)、確認手順は [docs/final-review-guide.md](docs/final-review-guide.md) を参照してください。** 仕様の正本は [docs/SPECIFICATION.md](docs/SPECIFICATION.md) です。
+### このデモの範囲
+
+- **実装している**：残高と複式台帳（不変仕訳・貸借一致）、オーソリと部分売上確定、返金、出金、継続課金、冪等性、workspace隔離、権限とスコープ、署名付きWebhookの再送と鍵更新、ホスト型チェックアウト、加盟店向けAPI・SDK・調査画面。
+- **模擬している**：外部金融機関との境界。カード会社・銀行・KYC審査・メール送信は `MockProvider` が代役を務め、実際の預金・送金・カード決済は一切行いません。
+- **未実装**：多通貨残高と為替レート。冒頭の製品像のうち通貨換算にあたる部分で、現在のデモは日本円（JPY）単体で動きます。金額はすべて整数（最小通貨単位）で扱うため、多通貨化は台帳の構造を変えずに拡張できる設計です。
+
+初期残高・人物・商品・加盟店はすべてサンプルで、実顧客の実績ではありません。
 
 ## 必要環境
 
@@ -44,7 +62,7 @@ pnpm run dev
 
 Docker を使わない場合の既存 PostgreSQL の設定手順は [docs/CLOUD-START.md](docs/CLOUD-START.md) 第7節にあります。root 環境では `pnpm db:local`（initdb）は使えません。
 
-初回はブラウザで http://localhost:3000 を開き「デモウォレットをはじめる」を選びます。訪問者ごとに隔離されたサンプル環境（利用者・友人・加盟店2社と5役割・運営者）を生成します。秘密鍵・共通管理者パスワードは配布しません。サンプル利用者の30,000円、友人の10,000円は初期チャージ仕訳から作成し、実顧客の実績ではありません。
+初回はブラウザで http://localhost:3000 を開き「デモウォレットをはじめる」または「デモアカウントで開始」を選びます（ようこそ画面のログイン欄は見せかけの表示で、認証は行いません）。訪問者ごとに隔離されたサンプル環境（利用者・友人・加盟店2社と5役割・運営者）を生成します。秘密鍵・共通管理者パスワードは配布しません。サンプル利用者の30,000円、友人の10,000円は初期チャージ仕訳から作成し、実顧客の実績ではありません。
 
 |サービス|標準URL|役割|
 |---|---|---|
@@ -91,4 +109,4 @@ DBテストは隔離workspaceを作成し、本物のPostgreSQLで100並列captu
 - [設計判断](docs/decisions.md)、[実装状況](docs/implementation-status.md)
 - 引き継ぎ履歴：[CLOUD-START](docs/CLOUD-START.md)、[HANDOFF](docs/HANDOFF.md)、[COMPLETION-PROMPT](docs/COMPLETION-PROMPT.md)、[TRANSFER-VERIFIED](docs/TRANSFER-VERIFIED.md)、[verification-record](docs/verification-record.md)
 
-公開配備・有料契約・実課金は実施していません。静的ホスティングだけでは動きません。Next・API・永続DB・worker・ECサーバーが必要です。スマートフォンから触るための手順（PC＋Cloudflare クイックトンネル `pnpm exec tsx scripts/tunnel.ts`、または `Dockerfile`／`render.yaml` による常時配備）は [docs/deploy.md](docs/deploy.md)、公開前の条件は [docs/security.md](docs/security.md) と [docs/architecture.md](docs/architecture.md) を参照してください。
+公開配備は各社の無料枠で実施しています（[ライブデモ](https://exw-portal-k7d2.onrender.com/wallet)）。有料契約・実課金は行っていません。静的ホスティングだけでは動きません。Next・API・永続DB・worker・ECサーバーが必要です。スマートフォンから触るための手順（PC＋Cloudflare クイックトンネル `pnpm exec tsx scripts/tunnel.ts`、または `Dockerfile`／`render.yaml` による常時配備）は [docs/deploy.md](docs/deploy.md)、公開前の条件は [docs/security.md](docs/security.md) と [docs/architecture.md](docs/architecture.md) を参照してください。
