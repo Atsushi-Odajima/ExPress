@@ -51,9 +51,9 @@ test('既存のデモ環境があるときは、その環境の利用者とし�
   assert.equal(login.statusCode,200);
   assert.equal(login.json().user.workspace_id,workspace,'新しい環境を作らず、cookieが指す環境に入る');
   // The display email of the sample user still works as the sign-in identifier.
-  const byEmail=await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:'haruka@example.test',password:config.demoLoginPassword}});
+  const byEmail=await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:'demo.josep@example.test',password:config.demoLoginPassword}});
   assert.equal(byEmail.statusCode,200);assert.equal(byEmail.json().user.workspace_id,workspace);
-  assert.equal((await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:'haruka@example.test',password:'wrong-password'}})).statusCode,401);
+  assert.equal((await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:'demo.josep@example.test',password:'wrong-password'}})).statusCode,401);
   // A workspace created before the built-in sign-in existed: no login id, and a password nobody knows.
   await pool.query("UPDATE users SET data=(data-'login_id')||jsonb_build_object('password_hash',$2::text) WHERE workspace_id=$1 AND business_key='consumer'",[workspace,'x:y']);
   const migrated=await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:config.demoLoginId,password:config.demoLoginPassword}});
