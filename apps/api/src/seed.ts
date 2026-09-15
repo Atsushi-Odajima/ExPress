@@ -6,7 +6,7 @@ import {scopes,capabilities} from '../../../packages/domain/src/index.ts';
 import {config} from '../../../packages/database/src/config.ts';
 export async function populate(tx:Tx) {
  const caps=Object.fromEntries(capabilities.map(c=>[c,true]));
- const user=await tx.create('users',{business_key:'consumer',owner_id:'preset',data:{name:'青山 はるか',email:'haruka@example.test',login_id:config.demoLoginId,preset:'consumer',language:'ja',timezone:'Asia/Tokyo',kyc:'verified',capabilities:caps,password_hash:passwordHash(config.demoLoginPassword||randomToken()),sample:true}});
+ const user=await tx.create('users',{business_key:'consumer',owner_id:'preset',data:{name:'demo josep',email:'demo.josep@example.test',login_id:config.demoLoginId,preset:'consumer',language:'ja',timezone:'Asia/Tokyo',kyc:'verified',capabilities:caps,password_hash:passwordHash(config.demoLoginPassword||randomToken()),sample:true}});
  const friend=await tx.create('users',{owner_id:'preset',business_key:'friend',data:{name:'佐藤 りく',email:'riku@example.test',preset:'friend',language:'ja',timezone:'Asia/Tokyo',kyc:'verified',capabilities:caps,password_hash:passwordHash(randomToken()),sample:true}});
  const merchants=[];
  for(const [i,name] of ['NORTHSTAR STORE','BLUEBIRD COFFEE'].entries()){
