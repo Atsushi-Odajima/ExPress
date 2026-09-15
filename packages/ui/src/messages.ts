@@ -106,6 +106,9 @@ ExPressで、ひとつにつながる。|Together in ExPress.
 クレジットカード・個人情報の入力は不要です。|No real card or personal information is needed.
 作成済みアカウントでログイン|Sign in to an existing demo account
 デモメール|Demo email
+デモメールまたはID|Demo email or ID
+デモアカウント|Demo account
+サンプル利用者「青山 はるか」として、あなた専用のデモ環境に入ります。|Signs you in as the sample user Haruka Aoyama, in your own demo workspace.
 パスワード|Password
 ログイン|Sign in
 加盟店|Merchant
