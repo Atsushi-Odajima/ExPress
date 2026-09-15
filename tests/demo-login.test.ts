@@ -54,5 +54,11 @@ test('既存のデモ環境があるときは、その環境の利用者とし�
   const byEmail=await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:'haruka@example.test',password:config.demoLoginPassword}});
   assert.equal(byEmail.statusCode,200);assert.equal(byEmail.json().user.workspace_id,workspace);
   assert.equal((await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:'haruka@example.test',password:'wrong-password'}})).statusCode,401);
+  // A workspace created before the built-in sign-in existed: no login id, and a password nobody knows.
+  await pool.query("UPDATE users SET data=(data-'login_id')||jsonb_build_object('password_hash',$2::text) WHERE workspace_id=$1 AND business_key='consumer'",[workspace,'x:y']);
+  const migrated=await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:config.demoLoginId,password:config.demoLoginPassword}});
+  assert.equal(migrated.statusCode,200,'古い環境でもデモアカウントで入れる');
+  assert.equal(migrated.json().user.workspace_id,workspace,'既存の環境をそのまま使う');
+  assert.equal((await app.inject({method:'POST',url:'/v1/auth/login',headers:{...origin,cookie:'exw_demo='+jar.exw_demo},payload:{email:config.demoLoginId,password:'0131'}})).statusCode,401,'移行は正しい資格情報のときだけ');
  }finally{await app.close();}
 });
