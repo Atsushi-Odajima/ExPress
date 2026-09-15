@@ -1,6 +1,6 @@
 # ExPress — Claude Code 向けメモ
 
-「国境をまたぐ送金と外貨決済を、実勢レートと明朗な少額手数料で扱うオンライン金融サービス」を題材にしたポートフォリオ実装。現行デモは JPY 単体で、多通貨・為替は未実装（README 冒頭の表現と揃えること）。実際の預金・送金・カード決済・有料契約は行わない（外部金融境界は `MockProvider`）。仕様の正本は `docs/SPECIFICATION.md`、状況は `docs/completion-report.md`、確認手順は `docs/final-review-guide.md`。
+「カード決済・QRコード決済に続く第三の決済手段」＝オンライン口座の残高で支払い、店舗にカード番号を渡さない決済サービス（PayPal的な位置づけ）を題材にしたポートフォリオ実装。通貨は JPY 単体（README 冒頭の表現と揃えること）。実際の預金・送金・カード決済・有料契約は行わない（外部金融境界は `MockProvider`）。仕様の正本は `docs/SPECIFICATION.md`、状況は `docs/completion-report.md`、確認手順は `docs/final-review-guide.md`。
 
 ## 開発コマンド
 
