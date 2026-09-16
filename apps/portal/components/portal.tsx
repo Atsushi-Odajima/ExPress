@@ -22,15 +22,15 @@ export default function Portal(){
  const lang=useLanguage(),setLang=setLanguage;
  const path=usePathname(),router=useRouter();const [session,setSession]=useState<Row|null>(null),[data,setData]=useState<Row>({}),[history,setHistory]=useState<Row>({data:[]}),[error,setError]=useState(''),[loading,setLoading]=useState(true),[starting,setStarting]=useState(false),[waited,setWaited]=useState(0),[action,setAction]=useState<Action|null>(null),[message,setMessage]=useState(''),[detail,setDetail]=useState<Row|null>(null),[dark,setDark]=useState(false),[mobile,setMobile]=useState(false),[secret,setSecret]=useState<Row|null>(null),[switching,setSwitching]=useState(false);
  const t=(ja:string,en:string)=>lang==='ja'?ja:en;const area=path.split('/')[1]||'wallet',section=path.split('/')[2]||'overview';
- const request=useCallback(async(url:string,method='GET',body?:unknown,key?:string)=>{
+ const request=useCallback(async(url:string,method='GET',body?:unknown,key?:string,timeoutMs=30000)=>{
   // A sleeping free instance answers with an HTML error page, and an unreachable one with a network failure.
   // Both would otherwise surface as a parser error, so they get their own message: the demo is waking up.
   const waking=()=>Object.assign(new Error(lang==='en'?'The demo server is waking up. Wait about a minute and try again.':tr("デモサーバーが起動中です。1分ほど待ってから、もう一度お試しください。")),{code:'SERVER_WAKING'});
-  const r=await fetch(API+url,{method,credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json',...(session?.csrf?{'x-csrf-token':session.csrf}:{}),...(key?{'Idempotency-Key':key}:{})},body:body===undefined?undefined:JSON.stringify(body)}).catch(()=>{throw waking();});
+  const r=await fetch(API+url,{method,credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json',...(session?.csrf?{'x-csrf-token':session.csrf}:{}),...(key?{'Idempotency-Key':key}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(timeoutMs)}).catch(()=>{throw waking();});
   const b=await r.json().catch(()=>undefined);if(b===undefined)throw waking();
   if(!r.ok)throw Object.assign(new Error(lang==='en'?(englishErrors[b.error?.code]??'The request could not be completed.'):(b.error?.message??tr("処理を完了できませんでした。"))),{code:b.error?.code,requestId:b.error?.request_id});return b;},[session?.csrf,lang]);
  const refresh=useCallback(async(quiet=false)=>{
-  if(!quiet)setLoading(true);setError('');try{const s=await request('/v1/session');setSession(s);localStorage.setItem('exw-timezone',s.user.data.timezone??'Asia/Tokyo');
+  if(!quiet)setLoading(true);setError('');try{const s=await request('/v1/session',undefined,undefined,undefined,session?30000:8000);setSession(s);localStorage.setItem('exw-timezone',s.user.data.timezone??'Asia/Tokyo');
    let d:Row={};if(area==='checkout')d=await request('/v1/checkout/'+section);else if(area==='request')d={request:await request('/v1/me/payment-requests/'+section)};else if(area==='admin')d=await request('/v1/admin/overview');else if(area==='demo')d=await request('/v1/demo/inspect');else if(area==='merchant'||area==='developer')d=await request('/v1/merchant/overview');else if(area==='wallet'||area==='')d=await request('/v1/me/overview');setData(d);
    if((area==='wallet'||area==='merchant')&&section==='overview'){try{setHistory(await request(area==='wallet'?'/v1/me/transactions':'/v1/transactions'));}catch{setHistory({data:[]});}}
   }catch(e:any){if(e.code==='UNAUTHENTICATED'||e.code==='SERVER_WAKING')setSession(null);else setError(e.message);}finally{setLoading(false);}
@@ -43,21 +43,22 @@ export default function Portal(){
  useEffect(()=>{void refresh();setDetail(null);setMobile(false);},[refresh]);
  useEffect(()=>{if(!session)return;const id=setInterval(()=>{if(['overview','transactions'].includes(section)||area==='checkout'||area==='demo')void refresh(true);},5000);return()=>clearInterval(id);},[session?.user?.id,refresh,section,area]);
  function go(url:string){if(url!==path)router.push(url);}
- // A free instance that has gone to sleep answers 502 for about half a minute. The opening screen stays on
- // screen throughout, with the wait shown on the button, so one click always ends up inside the demo.
+ // A free instance that has gone to sleep answers 502, or holds the connection open, for about half a minute.
+ // Each attempt is limited to 15 s, the clock ticks on its own, and the click moves to a preparing screen at once.
  const startingLabel=()=>lang==='en'?`Starting the demo server… ${waited}s`:tr("デモサーバーを起動しています…")+(waited?` ${waited}秒`:'');
  async function start(){
   if(starting)return;setStarting(true);setError('');setWaited(0);const began=Date.now();
+  const clock=setInterval(()=>setWaited(Math.round((Date.now()-began)/1000)),1000);
   try{
    for(;;){
-    try{const s=await request('/v1/demo/start','POST',{});setSession(s);go('/wallet');return;}
+    try{const s=await request('/v1/demo/start','POST',{},undefined,15000);setSession(s);go('/wallet');return;}
     catch(e:any){
-     const stillWaking=e.code==='SERVER_WAKING'&&Date.now()-began<180000;
+     const stillWaking=e.code==='SERVER_WAKING'&&Date.now()-began<240000;
      if(!stillWaking){setError(e.code==='SERVER_WAKING'?(lang==='en'?'The demo server did not answer. Reload the page and try again.':tr("デモサーバーが応答しませんでした。ページを再読み込みしてお試しください。")):e.message);return;}
-     setWaited(Math.round((Date.now()-began)/1000));await new Promise(r=>setTimeout(r,3000));
+     await new Promise(r=>setTimeout(r,2000));
     }
    }
-  }finally{setStarting(false);}
+  }finally{clearInterval(clock);setStarting(false);}
  }
  async function switchRole(preset:string){setSwitching(true);try{const r=await request('/v1/demo/switch','POST',{preset});setSession(null);const next=preset==='admin'?'/admin':preset.startsWith('merchant')?'/merchant':'/wallet';go(next);setSession(r);setDetail(null);}catch(e:any){setError(e.message);}finally{setSwitching(false);}}
  async function openStore(){try{const r=await request('/v1/demo/store-handoff','POST',{});window.location.assign(r.store_url+'/connect?code='+encodeURIComponent(r.code));}catch(e:any){if(e.code==='INVALID_STATE')window.location.assign(STORE);else setError(e.message);}}
@@ -84,6 +85,7 @@ export default function Portal(){
  const orderTable=(rows:Row[])=><DataTable rows={rows} empty={t(tr("まだ決済がありません。サンプルECで購入をお試しください。"),'No payments yet. Try a purchase at the sample store.')} columns={[{label:t(tr("決済 / 外部注文番号"),'Payment / reference'),render:r=><><strong>{r.data.description||r.business_key}</strong><small>{r.business_key}</small></>},{label:t(tr("金額"),'Amount'),render:r=><Amount value={r.amount}/>},{label:t(tr("状態"),'Status'),render:r=><BadgeStatus value={r.status}/>},{label:t(tr("日時"),'Date'),render:r=>date(r.created_at)},{label:'',render:r=><button className="text-button" onClick={()=>showOrder(r.id)}>{t(tr("詳細"),'Details')} <ChevronRight size={14}/></button>}]}/>;
  const apiRecords=(rows:Row[],columns=['id','status','amount'])=><DataTable rows={rows} columns={columns.map(k=>({label:k,render:r=>k==='status'?<BadgeStatus value={r[k]}/>:k==='amount'?<Amount value={r[k]??'0'}/>:<code>{typeof r[k]==='object'?JSON.stringify(r[k]):String(r[k]??'—')}</code>}))}/>;
  if(loading&&!session)return <div className="boot"><Logo/><div className="spinner"/><p>{t(tr("ウォレットを準備しています…"),'Loading your wallet…')}</p></div>;
+ if(!session&&starting)return <div className="boot preparing"><Logo/><div className="prep-bar"><span/></div><p>{waited<3?t(tr("サーバーに接続しています…"),'Connecting…'):waited<8?t(tr("アカウントを準備しています…"),'Preparing your account…'):t(tr("デモサーバーを起動しています…"),'Starting the demo server…')}</p><small>{waited}{lang==='en'?'s':'秒'}{waited>=8&&<><br/>{t(tr("無料プランのため、最初の起動に30〜60秒ほどかかります。このままお待ちください。"),'On the free plan the first start takes 30 to 60 seconds. Hold on.')}</>}</small></div>;
  if(!session)return <div className="welcome"><div className="demo-banner">{t(tr("デモ・実際のお金は動きません"),'Demo · No real money moves')}</div><header><Logo/><button className="icon-button" aria-label="Language" onClick={()=>setLang(lang==='ja'?'en':'ja')}><Globe size={20}/></button></header><main><Badge tone="green">YOUR EVERYDAY WALLET</Badge><h1>{t(tr("支払いを、"),'Payments,')}<br/><span>{t(tr("もっと自由に。"),'with more possibility.')}</span></h1><p>{t(tr("いつものお買い物も、大切な人への送金も。"),'From everyday shopping to sending money to someone you care about.')}<br/>{t(tr("ExPressで、ひとつにつながる。"),'Bring it all together with ExPress.')}</p><button className="primary large" onClick={start} disabled={starting}>{starting?startingLabel():t(tr("デモウォレットをはじめる"),'Open a demo wallet')} <ArrowUpRight size={19}/></button><small>{starting?t(tr("無料プランのため、最初の起動に30〜60秒ほどかかります。このままお待ちください。"),'On the free plan the first start takes 30 to 60 seconds. Hold on.'):<>{t(tr("訪問者ごとに専用のサンプル環境を作成します。"),'Your own isolated sample workspace.')}<br/>{t(tr("クレジットカード・個人情報の入力は不要です。"),'No real card details or personal information required.')}</>}</small><details className="login-details" open><summary>{t(tr("デモアカウントでログイン"),'Sign in with the demo account')}</summary>
    {/* A sign-in panel for show. The fields are filled in and read only, nothing typed here is sent anywhere, and the
        button opens the same isolated sample workspace as the button above. */}
