@@ -24,6 +24,13 @@
 
 初期残高・人物・商品・加盟店はすべてサンプルで、実顧客の実績ではありません。
 
+## 実装・検証の確認先
+
+このブランチは `claude/express-completion-delivery-e92pt1` です。
+- [完成報告](docs/completion-report.md) / [要件対応表](docs/requirements-matrix.md)：実装済み・設定待ち・未検証の対応。
+- [ブラウザSDK](packages/sdk-browser) / [サーバーSDK](packages/sdk-server)：外部ECとウォレットの連携境界。
+- 実資金移動・実カード決済・実KYCを提供する製品ではなく、分離したデモ環境でのポートフォリオ実装です。
+
 ## 必要環境
 
 - Node.js 24 LTS（実測 24.21.0）、pnpm 11.19.0（`npm install -g pnpm@11.19.0` または corepack）。
