@@ -8,6 +8,12 @@
 
 **別PC・クラウドへの引き継ぎ入口：** [取得・起動手順](docs/CLOUD-START.md) → [完成までの指示](docs/COMPLETION-PROMPT.md) → [詳細引き継ぎ](docs/HANDOFF.md)。[ユーザー開発仕様の原文](docs/SPECIFICATION.md)も保存しています。[ソースのpush・別clone検証済み](docs/TRANSFER-VERIFIED.md)です。以前の初期READMEだけのcloneは、mainを更新して実装一式を取得してください。Windowsの元フォルダーへ接続する必要はありません。
 
+## 実装バージョンの案内
+
+このREADMEの以下の説明・相対リンクは、現在の `main` の実装を対象にしています。
+追加のSDK・配備・画面改良は [実装ブランチ](https://github.com/Atsushi-Odajima/ExPress/tree/claude%2Fexpress-completion-delivery-e92pt1)（`claude/express-completion-delivery-e92pt1`）にあります。
+その版を試す場合は、ブランチ内のREADME・完成報告・要件対応表を参照してください。
+
 ## 必要環境
 
 - Node.js 24 LTS、pnpm 11.19.0。`npm install -g pnpm@11.19.0`。
